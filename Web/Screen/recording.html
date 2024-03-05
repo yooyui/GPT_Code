@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enhanced Screen Recorder</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 10px;
+    padding: 0;
+    background-color: #f4f4f4;
+    text-align: center;
+}
+
+button {
+    margin: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+video {
+    max-width: 100%;
+    margin-top: 10px;
+}
+</style>
+</head>
+<body>
+
+<h1>在线录屏</h1>
+<label for="audioOptions">包括声音:</label>
+<select id="audioOptions">
+    <option value="none">无</option>
+    <option value="system">系统声音</option>
+    <option value="microphone">麦克风</option>
+    <option value="both">系统声音 + 麦克风</option>
+</select>
+<br>
+<label for="videoQuality">视频质量:</label>
+<select id="videoQuality">
+    <option value="1080">1080p</option>
+    <option value="720">720p</option>
+    <option value="480">480p</option>
+    <option value="360">360p</option>
+</select>
+<br>
+<button id="startRecording">开始录屏</button>
+<button id="stopRecording" disabled>停止录屏</button>
+<button id="downloadVideo" style="display:none;">下载视频</button>
+<video id="screenVideo" controls></video>
+
+<script>
+const startRecording = document.getElementById('startRecording');
+const stopRecording = document.getElementById('stopRecording');
+const downloadVideo = document.getElementById('downloadVideo');
+const screenVideo = document.getElementById('screenVideo');
+const audioOptions = document.getElementById('audioOptions');
+const videoQuality = document.getElementById('videoQuality');
+
+let mediaRecorder;
+let recordedBlobs;
+
+async function getAudioStream() {
+    if (audioOptions.value === 'microphone' || audioOptions.value === 'both') {
+        try {
+            return await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (e) {
+            console.error('Error getting microphone audio stream:', e);
+        }
+    }
+    return null;
+}
+
+async function startScreenRecording() {
+    const videoConstraints = {};
+    const quality = videoQuality.value;
+    if (quality === '1080') {
+        videoConstraints.width = 1920;
+        videoConstraints.height = 1080;
+    } else if (quality === '720') {
+        videoConstraints.width = 1280;
+        videoConstraints.height = 720;
+    } else if (quality === '480') {
+        videoConstraints.width = 854;
+        videoConstraints.height = 480;
+    } else if (quality === '360') {
+        videoConstraints.width = 640;
+        videoConstraints.height = 360;
+    }
+    
+    try {
+        const audioStream = await getAudioStream();
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({
+            video: videoConstraints,
+            audio: audioOptions.value === 'system' || audioOptions.value === 'both'
+        });
+
+        if (audioStream && screenStream.getAudioTracks().length === 0) {
+            audioStream.getAudioTracks().forEach(track => screenStream.addTrack(track));
+        }
+
+        screenVideo.srcObject = screenStream;
+        recordedBlobs = [];
+
+        mediaRecorder = new MediaRecorder(screenStream, { mimeType: 'video/webm; codecs=vp9' });
+        mediaRecorder.ondataavailable = event => {
+            if (event.data && event.data.size > 0) {
+                recordedBlobs.push(event.data);
+            }
+        };
+        mediaRecorder.onstop = () => {
+            const superBuffer = new Blob(recordedBlobs, { type: 'video/webm' });
+            screenVideo.src = window.URL.createObjectURL(superBuffer);
+            downloadVideo.style.display = 'block';
+        };
+        mediaRecorder.start();
+
+        startRecording.disabled = true;
+        stopRecording.disabled = false;
+
+        screenStream.getVideoTracks()[0].onended = () => {
+            stopRecording.click();
+        };
+    } catch (error) {
+        console.error('Error starting screen recording:', error);
+    }
+}
+
+function stopScreenRecording() {
+    mediaRecorder.stop();
+    startRecording.disabled = false;
+    stopRecording.disabled = true;
+}
+
+function downloadRecordedVideo() {
+    const blob = new Blob(recordedBlobs, { type: 'video/webm' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = 'recorded-video.webm';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 100);
+}
+
+startRecording.addEventListener('click', startScreenRecording);
+stopRecording.addEventListener('click', stopScreenRecording);
+downloadVideo.addEventListener('click', downloadRecordedVideo);
+</script>
+
+</body>
+</html>
