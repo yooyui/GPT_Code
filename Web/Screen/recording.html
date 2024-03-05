@@ -61,6 +61,17 @@ const videoQuality = document.getElementById('videoQuality');
 let mediaRecorder;
 let recordedBlobs;
 
+function getSupportedMimeType() {
+    if (MediaRecorder.isTypeSupported('video/webm; codecs=vp9')) {
+        return 'video/webm; codecs=vp9';
+    } else if (MediaRecorder.isTypeSupported('video/webm; codecs=vp8')) {
+        return 'video/webm; codecs=vp8';
+    } else {
+        console.error('VP8 and VP9 codecs are not supported.');
+        return null;
+    }
+}
+
 async function getAudioStream() {
     if (audioOptions.value === 'microphone' || audioOptions.value === 'both') {
         try {
@@ -103,7 +114,12 @@ async function startScreenRecording() {
         screenVideo.srcObject = screenStream;
         recordedBlobs = [];
 
-        mediaRecorder = new MediaRecorder(screenStream, { mimeType: 'video/webm; codecs=vp9' });
+        const mimeType = getSupportedMimeType();
+        if (!mimeType) {
+            throw new Error('No supported video codecs found.');
+        }
+
+        mediaRecorder = new MediaRecorder(screenStream, { mimeType });
         mediaRecorder.ondataavailable = event => {
             if (event.data && event.data.size > 0) {
                 recordedBlobs.push(event.data);
