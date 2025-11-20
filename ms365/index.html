@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M365 用户与订阅管理 Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <style>
+        body { background-color: #faf9f8; font-family: "Segoe UI", sans-serif; }
+        .navbar { background-color: #0078d4; color: white; }
+        .card { border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .card:hover { transform: translateY(-2px); }
+        .avatar { width: 32px; height: 32px; background-color: #0078d4; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; margin-right: 10px; }
+        .hidden { display: none !important; }
+        .toast-container { position: fixed; top: 20px; right: 20px; z-index: 1055; }
+    </style>
+</head>
+<body>
+
+    <div id="loginSection" class="container vh-100 d-flex align-items-center justify-content-center">
+        <div class="text-center">
+            <h2 class="mb-4">M365 管理控制台</h2>
+            <button id="loginBtn" class="btn btn-primary btn-lg px-5">
+                <i class="bi bi-microsoft me-2"></i> 登录 Azure AD
+            </button>
+        </div>
+    </div>
+
+    <div id="dashboardSection" class="hidden">
+        <nav class="navbar navbar-expand-lg navbar-dark px-4 mb-4">
+            <a class="navbar-brand" href="#"><i class="bi bi-grid-3x3-gap-fill me-2"></i>M365 Manager</a>
+            <div class="ms-auto d-flex align-items-center">
+                <span id="userName" class="me-3 fw-bold">User</span>
+                <button id="logoutBtn" class="btn btn-sm btn-outline-light">退出</button>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4><i class="bi bi-box-seam me-2"></i>订阅概况 (Licenses)</h4>
+                <button class="btn btn-sm btn-outline-primary" onclick="refreshData()">
+                    <i class="bi bi-arrow-clockwise"></i> 刷新数据
+                </button>
+            </div>
+            <div id="skuContainer" class="row g-4 mb-5">
+                <div class="col-12 text-center"><div class="spinner-border text-primary"></div></div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4><i class="bi bi-people me-2"></i>用户管理</h4>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                    <i class="bi bi-person-plus-fill me-2"></i>新建用户
+                </button>
+            </div>
+            <div class="card p-0 overflow-hidden">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-4">用户</th>
+                                <th>邮箱 (UPN)</th>
+                                <th>位置</th>
+                                <th>已分配许可</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="createUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">新建用户并分配订阅</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createUserForm">
+                        <div class="mb-3">
+                            <label class="form-label">显示名称 (Display Name)</label>
+                            <input type="text" class="form-control" id="newDisplayName" required placeholder="例如: 张三">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">用户名 (Mail Nickname)</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="newMailNickname" required placeholder="zhangsan">
+                                <span class="input-group-text" id="domainSuffix">@domain.com</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">初始密码</label>
+                            <input type="text" class="form-control" id="newPassword" value="P@ssw0rd1234!" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">使用地点 (Usage Location)</label>
+                            <select class="form-select" id="newUsageLocation">
+                                <option value="CN" selected>中国 (CN)</option>
+                                <option value="US">美国 (US)</option>
+                                <option value="JP">日本 (JP)</option>
+                                <option value="HK">香港 (HK)</option>
+                            </select>
+                            <div class="form-text text-muted">必须指定地点才能分配订阅。</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">分配订阅 (Licenses)</label>
+                            <div id="licenseCheckboxList" class="border p-2 rounded bg-light">
+                                <small class="text-muted">正在加载可用订阅...</small>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" onclick="handleCreateUser()">
+                        <span id="createSpinner" class="spinner-border spinner-border-sm d-none"></span> 创建用户
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toastTitle">通知</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastBody"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://alcdn.msauth.net/browser/2.30.0/js/msal-browser.min.js"></script>
+    
+    <script>
+        // ================= 配置区 =================
+        const msalConfig = {
+            auth: {
+                clientId: "Application (client) ID", // 【替换】你的 Application (client) ID
+                authority: "https://login.microsoftonline.com/ Directory (tenant) ID", // 【替换】你的 Directory (tenant) ID
+                redirectUri: "http://localhost:3000", // 【替换】必须与 Azure Portal 注册的一致
+            },
+            cache: { cacheLocation: "sessionStorage" }
+        };
+
+        // 请求权限：增加了 Write 权限
+        const requestObj = {
+            scopes: ["User.Read", "User.ReadWrite.All", "Directory.ReadWrite.All", "Organization.Read.All"]
+        };
+
+        const graphEndpoints = {
+            me: "https://graph.microsoft.com/v1.0/me",
+            users: "https://graph.microsoft.com/v1.0/users",
+            skus: "https://graph.microsoft.com/v1.0/subscribedSkus",
+            domain: "https://graph.microsoft.com/v1.0/domains" // 用于获取域名后缀
+        };
+
+        let myMsal = new msal.PublicClientApplication(msalConfig);
+        let currentDomain = "";
+        let availableSkus = []; // 缓存SKU数据供模态框使用
+
+        // ================= 初始化逻辑 =================
+        window.addEventListener('load', async () => {
+            await myMsal.initialize();
+            const response = await myMsal.handleRedirectPromise();
+            if (response) {
+                showDashboard(response.account);
+            } else {
+                const accounts = myMsal.getAllAccounts();
+                if (accounts.length > 0) showDashboard(accounts[0]);
+            }
+        });
+
+        document.getElementById('loginBtn').onclick = () => myMsal.loginRedirect(requestObj);
+        document.getElementById('logoutBtn').onclick = () => myMsal.logoutRedirect();
+
+        async function showDashboard(account) {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('userName').innerText = account.name;
+            
+            const token = await getToken();
+            if(token) {
+                // 并行加载基础数据
+                Promise.all([fetchSkus(token), fetchUsers(token), fetchDomain(token)]);
+            }
+        }
+
+        async function getToken() {
+            try {
+                const account = myMsal.getAllAccounts()[0];
+                const response = await myMsal.acquireTokenSilent({ ...requestObj, account });
+                return response.accessToken;
+            } catch (e) {
+                return myMsal.acquireTokenPopup(requestObj).then(r => r.accessToken);
+            }
+        }
+
+        // ================= 数据获取 =================
+        
+        // 1. 获取订阅并渲染到两个地方：仪表盘 和 新建用户模态框
+        async function fetchSkus(token) {
+            const data = await callGraph(graphEndpoints.skus, token);
+            availableSkus = data.value || [];
+            renderSkuDashboard(availableSkus);
+            renderSkuCheckboxes(availableSkus);
+        }
+
+        // 2. 获取用户列表
+        async function fetchUsers(token) {
+            // $select 优化查询性能
+            const url = `${graphEndpoints.users}?$select=displayName,userPrincipalName,assignedLicenses,accountEnabled,usageLocation`;
+            const data = await callGraph(url, token);
+            renderUsers(data.value);
+        }
+
+        // 3. 获取租户域名 (为了自动填充 @xxx.onmicrosoft.com)
+        async function fetchDomain(token) {
+            const data = await callGraph(graphEndpoints.domain, token);
+            const defaultDomain = data.value.find(d => d.isDefault).id;
+            currentDomain = defaultDomain;
+            document.getElementById('domainSuffix').innerText = "@" + defaultDomain;
+        }
+
+        // ================= 核心业务：新建用户 =================
+
+        async function handleCreateUser() {
+            const btn = document.querySelector('#createUserModal .btn-primary');
+            const spinner = document.getElementById('createSpinner');
+            
+            // 简单的表单验证
+            const displayName = document.getElementById('newDisplayName').value;
+            const nickname = document.getElementById('newMailNickname').value;
+            const password = document.getElementById('newPassword').value;
+            const location = document.getElementById('newUsageLocation').value;
+            
+            // 获取选中的 Licenses
+            const selectedSkuIds = [];
+            document.querySelectorAll('.sku-checkbox:checked').forEach(cb => {
+                selectedSkuIds.push(cb.value);
+            });
+
+            if(!displayName || !nickname || !password) {
+                alert("请填写所有必填项");
+                return;
+            }
+
+            // UI Loading 状态
+            btn.disabled = true;
+            spinner.classList.remove('d-none');
+
+            const token = await getToken();
+            if (!token) return;
+
+            try {
+                // 步骤 A: 创建用户对象
+                const userPayload = {
+                    accountEnabled: true,
+                    displayName: displayName,
+                    mailNickname: nickname,
+                    userPrincipalName: `${nickname}@${currentDomain}`,
+                    usageLocation: location, // ⚠️ 必须设置地点才能分配 License
+                    passwordProfile: {
+                        forceChangePasswordNextSignIn: false,
+                        password: password
+                    }
+                };
+
+                console.log("Creating user...", userPayload);
+                const createdUser = await callGraph(graphEndpoints.users, token, "POST", userPayload);
+                
+                if (createdUser.error) throw createdUser.error;
+                showToast("成功", `用户 ${createdUser.displayName} 创建成功！`);
+
+                // 步骤 B: 分配 License (如果有选中)
+                if (selectedSkuIds.length > 0) {
+                    await assignLicense(createdUser.id, selectedSkuIds, token);
+                }
+
+                // 步骤 C: 刷新列表并关闭模态框
+                const modal = bootstrap.Modal.getInstance(document.getElementById('createUserModal'));
+                modal.hide();
+                document.getElementById('createUserForm').reset();
+                fetchUsers(token); // 刷新表格
+                fetchSkus(token);  // 刷新余量
+
+            } catch (error) {
+                console.error(error);
+                showToast("错误", "操作失败: " + (error.message || JSON.stringify(error)));
+            } finally {
+                btn.disabled = false;
+                spinner.classList.add('d-none');
+            }
+        }
+
+        // 分配许可的独立函数
+        async function assignLicense(userId, skuIds, token) {
+            const payload = {
+                addLicenses: skuIds.map(id => ({ skuId: id })),
+                removeLicenses: []
+            };
+            
+            const url = `${graphEndpoints.users}/${userId}/assignLicense`;
+            try {
+                await callGraph(url, token, "POST", payload);
+                showToast("成功", "许可证已分配！");
+            } catch (e) {
+                showToast("警告", "用户已创建，但许可证分配失败。可能是库存不足或冲突。");
+                console.error(e);
+            }
+        }
+
+        // ================= 辅助函数 & UI渲染 =================
+
+        async function callGraph(endpoint, token, method = "GET", body = null) {
+            const headers = new Headers();
+            headers.append("Authorization", `Bearer ${token}`);
+            headers.append("Content-Type", "application/json");
+
+            const options = { method, headers };
+            if (body) options.body = JSON.stringify(body);
+
+            const response = await fetch(endpoint, options);
+            
+            // Handle 204 No Content (AssignLicense returns this on success)
+            if (response.status === 204) return null; 
+
+            return await response.json();
+        }
+
+        function renderSkuDashboard(skus) {
+            const container = document.getElementById('skuContainer');
+            container.innerHTML = '';
+            if(skus.length === 0) { container.innerHTML = '<div class="col-12">无订阅信息</div>'; return; }
+
+            skus.forEach(sku => {
+                const total = sku.prepaidUnits.enabled;
+                const used = sku.consumedUnits;
+                const percent = total > 0 ? (used/total)*100 : 0;
+                let color = "bg-primary";
+                if(percent > 90) color = "bg-danger"; else if(percent > 75) color = "bg-warning";
+
+                container.innerHTML += `
+                <div class="col-md-4">
+                    <div class="card h-100 p-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="fw-bold text-truncate">${sku.skuPartNumber}</span>
+                            <span class="badge bg-light text-dark border">${used} / ${total}</span>
+                        </div>
+                        <div class="progress" style="height: 6px;">
+                            <div class="progress-bar ${color}" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+        }
+
+        function renderSkuCheckboxes(skus) {
+            const list = document.getElementById('licenseCheckboxList');
+            list.innerHTML = '';
+            skus.forEach(sku => {
+                const remaining = sku.prepaidUnits.enabled - sku.consumedUnits;
+                const disabled = remaining <= 0 ? 'disabled' : '';
+                list.innerHTML += `
+                <div class="form-check">
+                    <input class="form-check-input sku-checkbox" type="checkbox" value="${sku.skuId}" id="chk_${sku.skuId}" ${disabled}>
+                    <label class="form-check-label d-flex justify-content-between" for="chk_${sku.skuId}">
+                        <span>${sku.skuPartNumber}</span>
+                        <span class="badge ${remaining > 0 ? 'bg-success' : 'bg-secondary'}">剩 ${remaining}</span>
+                    </label>
+                </div>`;
+            });
+        }
+
+        function renderUsers(users) {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '';
+            users.forEach(user => {
+                const licenseCount = user.assignedLicenses ? user.assignedLicenses.length : 0;
+                tbody.innerHTML += `
+                <tr>
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar">${user.displayName[0]}</div>
+                            <div>${user.displayName}</div>
+                        </div>
+                    </td>
+                    <td>${user.userPrincipalName}</td>
+                    <td><span class="badge bg-light text-dark border">${user.usageLocation || '未设置'}</span></td>
+                    <td>${licenseCount > 0 ? `<span class="badge bg-info text-dark">${licenseCount} 许可</span>` : '<span class="text-muted">-</span>'}</td>
+                    <td>${user.accountEnabled ? '<span class="text-success">● 正常</span>' : '<span class="text-danger">● 禁用</span>'}</td>
+                </tr>`;
+            });
+        }
+
+        function showToast(title, msg) {
+            document.getElementById('toastTitle').innerText = title;
+            document.getElementById('toastBody').innerText = msg;
+            new bootstrap.Toast(document.getElementById('liveToast')).show();
+        }
+        
+        // 刷新功能
+        async function refreshData() {
+            const token = await getToken();
+            if(token) {
+                fetchSkus(token);
+                fetchUsers(token);
+            }
+        }
+    </script>
+</body>
+</html>
