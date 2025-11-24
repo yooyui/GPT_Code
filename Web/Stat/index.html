@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Server Command Center v2.2</title>
+    <title>Server Command Center v2.3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap');
@@ -122,7 +122,7 @@
         <div id="list-header" class="hidden sticky top-0 z-10 grid grid-cols-12 gap-4 px-4 py-3 bg-slate-900/90 backdrop-blur border-b border-slate-700 text-xs font-bold text-slate-400 uppercase tracking-wider">
             <div class="col-span-3 md:col-span-2">Host / IP</div>
             <div class="col-span-2 hidden md:block">Location / Ping</div>
-            <div class="col-span-3 md:col-span-2">Load / CPU</div>
+            <div class="col-span-3 md:col-span-2">Load / CPU%</div>
             <div class="col-span-3 md:col-span-2">RAM</div>
             <div class="col-span-3 md:col-span-2">Network</div>
             <div class="col-span-2 hidden xl:block">Uptime</div>
@@ -215,48 +215,46 @@
         // ================= 数据解析工具函数 (Hardened) =================
         
         /**
-         * 强力解析 Ping 值，确保绝不返回 Object
+         * 强力解析 Ping 值
          */
         const getPingValue = (pingData) => {
             if (pingData === undefined || pingData === null) return 0;
-
             if (typeof pingData === 'number') return Math.round(pingData);
-
             if (typeof pingData === 'string') {
                 if (pingData.includes('Object')) return 0;
                 const parsed = parseFloat(pingData);
                 return isNaN(parsed) ? 0 : Math.round(parsed);
             }
-
             if (typeof pingData === 'object') {
                 const rawVal = pingData.Now ?? pingData.Avg ?? 0;
                 if (typeof rawVal === 'object') return 0;
                 const finalVal = Number(rawVal);
                 return isNaN(finalVal) ? 0 : Math.round(finalVal);
             }
-
             return 0;
         };
 
         /**
-         * 强力解析 Load 值，处理数组或标量
+         * 强力解析 Load 值
          */
         const getLoadValue = (loadData) => {
             if (loadData === undefined || loadData === null) return "0.00";
-            
             let val = loadData;
-            
-            // 如果是数组，取第一个元素 (1分钟负载)
-            if (Array.isArray(loadData) && loadData.length > 0) {
-                val = loadData[0];
-            }
-            
-            if (typeof val === 'object' && val !== null) {
-                return "0.00"; 
-            }
-
+            if (Array.isArray(loadData) && loadData.length > 0) val = loadData[0];
+            if (typeof val === 'object' && val !== null) return "0.00"; 
             const num = parseFloat(val);
             return isNaN(num) ? "0.00" : num.toFixed(2);
+        };
+
+        /**
+         * NEW: 计算 Load 百分比
+         * (Load / Cores) * 100
+         */
+        const getLoadPercent = (loadVal, coreNum) => {
+            const load = parseFloat(loadVal) || 0;
+            const cores = parseInt(coreNum) || 1; // 防止除以0，默认1核
+            if (load <= 0) return 0;
+            return Math.round((load / cores) * 100);
         };
 
 
@@ -498,8 +496,14 @@
                 // 准备安全数据
                 const loadVal = getLoadValue(data.Load);
                 const pingVal = getPingValue(data.Ping);
+                const loadPct = getLoadPercent(loadVal, data.CoreNum);
                 
-                // NEW: 优雅处理空数据展示
+                // Load 颜色
+                let loadColorClass = 'text-white';
+                if(loadPct >= 100) loadColorClass = 'text-red-400';
+                else if(loadPct >= 80) loadColorClass = 'text-yellow-400';
+
+                // Ping Display
                 const pingDisplay = pingVal > 0 ? `<span class="text-white font-mono mr-2">${pingVal}ms</span>` : `<span class="text-slate-600 font-mono mr-2">--</span>`;
                 const pingHostDisplay = data.PingHost 
                     ? `<span class="text-xs px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">${data.PingHost}</span>` 
@@ -516,7 +520,10 @@
                             </div>
                             <div class="flex justify-between border-b border-slate-700/50 pb-2">
                                 <span class="text-slate-400">负载 (Load)</span>
-                                <span class="text-white font-mono">${loadVal}</span>
+                                <span>
+                                    <span class="font-mono ${loadColorClass} mr-1">${loadVal}</span>
+                                    <span class="text-xs text-slate-500">(${loadPct}%)</span>
+                                </span>
                             </div>
                             <div class="flex justify-between border-b border-slate-700/50 pb-2">
                                 <span class="text-slate-400">网络延迟 (Ping)</span>
@@ -649,9 +656,14 @@
                 const loadVal = getLoadValue(data.Load);
                 const pingVal = getPingValue(data.Ping);
                 
+                // NEW: Load Percentage Logic
+                const loadPct = getLoadPercent(loadVal, data.CoreNum);
+                let loadBarColor = 'bg-blue-500';
+                if(loadPct >= 90) loadBarColor = 'bg-red-500';
+                else if(loadPct >= 70) loadBarColor = 'bg-yellow-500';
+                
                 // Display Logic for Ping
                 const pingHostDisplay = data.PingHost ? data.PingHost : '--';
-                const pingValDisplay = pingVal > 0 ? pingVal + 'ms' : ''; // 0ms 不显示数值，只显示 Host 占位
 
                 return `
                 <div onclick="app.openDetail('${data.id}')" class="clickable glass-card rounded-xl p-5 transition-smooth hover:scale-[1.01] hover:bg-slate-800/50 ${opacity}">
@@ -671,13 +683,18 @@
                     </div>
                     
                     <div class="grid grid-cols-2 gap-3 text-xs mb-3">
-                        <div class="bg-slate-900/50 rounded p-2 border border-white/5">
-                            <div class="text-slate-400 mb-1">Load</div>
-                            <div class="flex items-end gap-1">
-                                <span class="text-lg font-mono font-bold text-white">${loadVal}</span>
-                                <span class="text-[10px] text-slate-500 mb-1">/ ${data.CoreNum}C</span>
+                        <div class="bg-slate-900/50 rounded p-2 border border-white/5 relative overflow-hidden group">
+                             <div class="relative z-10">
+                                <div class="text-slate-400 mb-1">Load</div>
+                                <div class="flex items-end gap-1">
+                                    <span class="text-lg font-mono font-bold text-white">${loadVal}</span>
+                                    <span class="text-[10px] text-slate-500 mb-1">(${loadPct}%)</span>
+                                </div>
                             </div>
+                            <!-- 动态进度条 -->
+                            <div class="absolute bottom-0 left-0 h-1 ${loadBarColor} progress-bar" style="width: ${Math.min(loadPct, 100)}%"></div>
                         </div>
+
                         <div class="bg-slate-900/50 rounded p-2 border border-white/5 relative overflow-hidden group">
                             <div class="relative z-10">
                                 <div class="text-slate-400 mb-1">RAM</div>
@@ -723,6 +740,12 @@
                 const loadVal = getLoadValue(data.Load);
                 const pingVal = getPingValue(data.Ping);
                 
+                // Load Logic
+                const loadPct = getLoadPercent(loadVal, data.CoreNum);
+                let loadBarColor = 'bg-blue-500';
+                if(loadPct >= 90) loadBarColor = 'bg-red-500';
+                else if(loadPct >= 70) loadBarColor = 'bg-yellow-500';
+
                 // Display Logic
                 const pingHostDisplay = data.PingHost 
                     ? `<span class="px-1.5 py-0.5 rounded bg-slate-700 border border-slate-600">${data.PingHost}</span>` 
@@ -751,10 +774,13 @@
                         <div class="flex-grow">
                             <div class="flex justify-between text-xs mb-1">
                                 <span class="text-slate-400">Load</span>
-                                <span class="font-mono">${loadVal}</span>
+                                <div>
+                                    <span class="font-mono text-white mr-1">${loadVal}</span>
+                                    <span class="text-[10px] text-slate-500">(${loadPct}%)</span>
+                                </div>
                             </div>
                             <div class="w-full bg-slate-700 h-1 rounded-full">
-                                <div class="bg-blue-500 h-1 rounded-full" style="width: ${Math.min(parseFloat(loadVal) * 10, 100)}%"></div>
+                                <div class="${loadBarColor} h-1 rounded-full" style="width: ${Math.min(loadPct, 100)}%"></div>
                             </div>
                         </div>
                     </div>
@@ -791,15 +817,19 @@
                 
                 const netIn = Math.random() * 500000;
                 const netOut = Math.random() * 200000;
+                
+                // Mock Load: Random but related to core count
+                const coreNum = 16;
+                const load = (Math.random() * coreNum * 1.2).toFixed(2); // Can exceed 100%
 
                 data[id] = {
                     HostName: `Server-Node-${i+1}`,
                     IPAddr: `192.168.1.${100 + i}`,
                     Online: Math.random() > 0.05,
                     Uptime: Math.floor(Math.random() * 1000000),
-                    Load: [(Math.random() * 2).toFixed(2), 0, 0], // Mock 为数组，对齐真实数据
+                    Load: [load, 0, 0], 
                     CPUModel: { Name: 'Intel Xeon Gold 6133', Vendor: 'Intel' },
-                    CoreNum: 16,
+                    CoreNum: coreNum,
                     MemTotal: totalMem,
                     MemAvailable: totalMem - usedMem,
                     MemProc: usedMem,
@@ -809,7 +839,7 @@
                         '/': [100000000, 50000000],
                         '/data': [500000000, 20000000] 
                     },
-                    Ping: Math.floor(Math.random() * 80), // Mock 是数字，但真实环境可能是对象
+                    Ping: Math.floor(Math.random() * 80), 
                     PingHost: ['CN-HK', 'US-LA', 'JP-TYO'][Math.floor(Math.random()*3)],
                     ReportTime: Date.now() / 1000,
                     ReportClient: 'v2.0.1',
