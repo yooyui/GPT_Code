@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Server Command Center v2.2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+                radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* 玻璃拟态基础 */
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 动画与交互 */
+        .transition-smooth { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .progress-bar { transition: width 0.6s ease-out; }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+        .status-online { animation: pulse-green 2s infinite; }
+        
+        /* 滚动条 */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        
+        /* 搜索框聚焦样式 */
+        .search-input:focus {
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+            border-color: #60a5fa;
+        }
+
+        /* 列表模式特定样式 */
+        .list-row:hover { background: rgba(255, 255, 255, 0.03); }
+        .clickable { cursor: pointer; }
+
+        /* Modal 动画 */
+        .modal-enter { opacity: 0; transform: scale(0.95); }
+        .modal-enter-active { opacity: 1; transform: scale(1); transition: all 0.2s ease-out; }
+        .modal-exit { opacity: 1; transform: scale(1); }
+        .modal-exit-active { opacity: 0; transform: scale(0.95); transition: all 0.2s ease-in; }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col h-screen overflow-hidden">
+
+    <!-- 顶部概览与控制栏 -->
+    <header class="flex-none mb-6">
+        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+            <div>
+                <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400 tracking-tight">
+                    Nexus 监控中心
+                </h1>
+                <div class="flex items-center gap-3 text-sm text-slate-400 mt-1">
+                    <span id="total-server-count">0 Servers</span>
+                    <span class="w-1 h-1 rounded-full bg-slate-600"></span>
+                    <span>Last Update: <span id="last-updated" class="font-mono text-slate-300">--:--:--</span></span>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap gap-3 w-full xl:w-auto">
+                <!-- 统计小卡片 -->
+                <div class="glass-panel px-3 py-1.5 rounded-lg flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-green-500 status-online"></div>
+                    <span class="font-mono font-bold text-green-400" id="stat-online">0</span>
+                </div>
+                <div class="glass-panel px-3 py-1.5 rounded-lg flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                    <span class="font-mono font-bold text-red-400" id="stat-offline">0</span>
+                </div>
+
+                <!-- 搜索框 -->
+                <div class="relative flex-grow xl:flex-grow-0 min-w-[200px]">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" id="search-input" placeholder="Search IP, Hostname..." 
+                        class="search-input w-full bg-slate-800/50 border border-slate-600 rounded-lg pl-9 pr-4 py-1.5 text-sm text-white placeholder-slate-500 outline-none transition-all">
+                </div>
+
+                <!-- 视图切换 -->
+                <div class="glass-panel p-1 rounded-lg flex gap-1">
+                    <button onclick="app.setViewMode('grid')" id="btn-grid" class="p-1.5 rounded bg-slate-600 text-white transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                    </button>
+                    <button onclick="app.setViewMode('list')" id="btn-list" class="p-1.5 rounded hover:bg-slate-700/50 text-slate-400 transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 内容区域 (滚动容器) -->
+    <main class="flex-grow overflow-y-auto pr-2 relative" id="main-container">
+        <!-- 列表表头 (仅在列表模式显示) -->
+        <div id="list-header" class="hidden sticky top-0 z-10 grid grid-cols-12 gap-4 px-4 py-3 bg-slate-900/90 backdrop-blur border-b border-slate-700 text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <div class="col-span-3 md:col-span-2">Host / IP</div>
+            <div class="col-span-2 hidden md:block">Location / Ping</div>
+            <div class="col-span-3 md:col-span-2">Load / CPU</div>
+            <div class="col-span-3 md:col-span-2">RAM</div>
+            <div class="col-span-3 md:col-span-2">Network</div>
+            <div class="col-span-2 hidden xl:block">Uptime</div>
+        </div>
+
+        <!-- 数据容器 -->
+        <div id="server-container" class="pb-20">
+            <!-- 动态注入 -->
+        </div>
+
+        <!-- 空状态提示 -->
+        <div id="empty-state" class="hidden absolute inset-0 flex flex-col items-center justify-center text-slate-500">
+            <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <p>No servers found matching your query.</p>
+        </div>
+    </main>
+
+    <!-- 底部悬浮分页栏 -->
+    <footer class="fixed bottom-6 left-1/2 -translate-x-1/2 z-20">
+        <div class="glass-panel px-4 py-2 rounded-full flex items-center gap-4 shadow-2xl">
+            <button onclick="app.prevPage()" id="btn-prev" class="p-1 hover:text-blue-400 disabled:opacity-30 disabled:hover:text-current transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </button>
+            <span class="text-xs font-mono text-slate-300">
+                Page <span id="page-current" class="text-white font-bold">1</span> / <span id="page-total">1</span>
+            </span>
+            <button onclick="app.nextPage()" id="btn-next" class="p-1 hover:text-blue-400 disabled:opacity-30 disabled:hover:text-current transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+    </footer>
+
+    <!-- 详情弹窗 Modal -->
+    <div id="detail-modal" class="fixed inset-0 z-50 hidden" aria-hidden="true">
+        <!-- 背景遮罩 -->
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity opacity-0" id="modal-backdrop" onclick="app.closeModal()"></div>
+        
+        <!-- 弹窗内容容器 (居中) -->
+        <div class="flex items-center justify-center min-h-screen p-4 pointer-events-none">
+            <div id="modal-panel" class="pointer-events-auto relative w-full max-w-2xl bg-[#1e293b] border border-slate-700 rounded-2xl shadow-2xl overflow-hidden transform scale-95 opacity-0 transition-all duration-300 flex flex-col max-h-[90vh]">
+                
+                <!-- 头部 -->
+                <div class="p-5 border-b border-slate-700 flex justify-between items-center bg-slate-800/50">
+                    <div>
+                        <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                            <span id="modal-hostname">Server Name</span>
+                            <span id="modal-status-badge" class="px-2 py-0.5 rounded text-xs border bg-green-900/30 border-green-500 text-green-400">Online</span>
+                        </h3>
+                        <p class="text-sm text-slate-400 font-mono mt-1" id="modal-ip">127.0.0.1</p>
+                    </div>
+                    <button onclick="app.closeModal()" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-700 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+
+                <!-- 滚动内容区 -->
+                <div class="p-6 overflow-y-auto space-y-6 text-sm" id="modal-body">
+                    <!-- 动态内容 -->
+                </div>
+
+                <!-- 底部 -->
+                <div class="p-4 bg-slate-900/50 border-t border-slate-800 text-xs text-slate-500 flex justify-between">
+                    <span>Client: <span id="modal-client" class="text-slate-400">--</span></span>
+                    <span>Reported: <span id="modal-report-time" class="text-slate-400">--</span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ================= 配置与状态 =================
+        const CONFIG = {
+            API_URL: '?format=json', 
+            USE_MOCK: false,  // 如果连接真实后端，请改为 false
+            POLL_INTERVAL: 3000,
+            PAGE_SIZE_GRID: 12,
+            PAGE_SIZE_LIST: 20 
+        };
+
+        const STATE = {
+            allData: [],        
+            filteredData: [],   
+            currentPage: 1,
+            viewMode: 'grid',  
+            searchQuery: '',
+            lastUpdateTime: 0,
+            modalOpen: false
+        };
+
+        // ================= 数据解析工具函数 (Hardened) =================
+        
+        /**
+         * 强力解析 Ping 值，确保绝不返回 Object
+         */
+        const getPingValue = (pingData) => {
+            if (pingData === undefined || pingData === null) return 0;
+
+            if (typeof pingData === 'number') return Math.round(pingData);
+
+            if (typeof pingData === 'string') {
+                if (pingData.includes('Object')) return 0;
+                const parsed = parseFloat(pingData);
+                return isNaN(parsed) ? 0 : Math.round(parsed);
+            }
+
+            if (typeof pingData === 'object') {
+                const rawVal = pingData.Now ?? pingData.Avg ?? 0;
+                if (typeof rawVal === 'object') return 0;
+                const finalVal = Number(rawVal);
+                return isNaN(finalVal) ? 0 : Math.round(finalVal);
+            }
+
+            return 0;
+        };
+
+        /**
+         * 强力解析 Load 值，处理数组或标量
+         */
+        const getLoadValue = (loadData) => {
+            if (loadData === undefined || loadData === null) return "0.00";
+            
+            let val = loadData;
+            
+            // 如果是数组，取第一个元素 (1分钟负载)
+            if (Array.isArray(loadData) && loadData.length > 0) {
+                val = loadData[0];
+            }
+            
+            if (typeof val === 'object' && val !== null) {
+                return "0.00"; 
+            }
+
+            const num = parseFloat(val);
+            return isNaN(num) ? "0.00" : num.toFixed(2);
+        };
+
+
+        // ================= 格式化工具函数 =================
+        const formatBytes = (bytes, decimals = 2) => {
+            if (!+bytes) return '0 B';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+        };
+
+        const formatSpeed = (bytesPerSec) => {
+            if (!bytesPerSec) return '0 B/s';
+            return formatBytes(bytesPerSec) + '/s';
+        };
+
+        const formatUptime = (seconds) => {
+            const days = Math.floor(seconds / 86400);
+            seconds %= 86400;
+            const hours = Math.floor(seconds / 3600);
+            seconds %= 3600;
+            const minutes = Math.floor(seconds / 60);
+            return `${days}天 ${hours}小时 ${minutes}分`;
+        };
+
+        const formatTime = (timestamp) => {
+            return new Date(timestamp * 1000).toLocaleString('zh-CN');
+        };
+
+        // ================= 核心逻辑类 =================
+        class App {
+            constructor() {
+                this.container = document.getElementById('server-container');
+                this.gridBtn = document.getElementById('btn-grid');
+                this.listBtn = document.getElementById('btn-list');
+                this.listHeader = document.getElementById('list-header');
+                
+                // Modal refs
+                this.modal = document.getElementById('detail-modal');
+                this.modalBackdrop = document.getElementById('modal-backdrop');
+                this.modalPanel = document.getElementById('modal-panel');
+                
+                document.getElementById('search-input').addEventListener('input', (e) => this.handleSearch(e.target.value));
+            }
+
+            init() {
+                this.fetchData();
+                setInterval(() => this.fetchData(), CONFIG.POLL_INTERVAL);
+            }
+
+            async fetchData() {
+                try {
+                    let rawData;
+                    if (CONFIG.USE_MOCK) {
+                        rawData = generateMockData(50);
+                        await new Promise(r => setTimeout(r, 100)); 
+                    } else {
+                        const res = await fetch(CONFIG.API_URL);
+                        rawData = await res.json();
+                    }
+                    
+                    const dataArray = Object.entries(rawData).map(([key, val]) => ({
+                        id: key,
+                        ...val
+                    }));
+
+                    dataArray.sort((a, b) => {
+                        if (b.Online !== a.Online) return b.Online - a.Online;
+                        return a.HostName.localeCompare(b.HostName);
+                    });
+
+                    STATE.allData = dataArray;
+                    STATE.lastUpdateTime = Date.now();
+                    
+                    this.updateStats();
+                    this.applyFilterAndRender(); 
+                } catch (e) {
+                    console.error("Data fetch error:", e);
+                }
+            }
+
+            updateStats() {
+                const online = STATE.allData.filter(d => d.Online).length;
+                document.getElementById('stat-online').innerText = online;
+                document.getElementById('stat-offline').innerText = STATE.allData.length - online;
+                document.getElementById('total-server-count').innerText = `${STATE.allData.length} Servers`;
+                document.getElementById('last-updated').innerText = new Date(STATE.lastUpdateTime).toLocaleTimeString();
+            }
+
+            handleSearch(query) {
+                STATE.searchQuery = query.toLowerCase();
+                STATE.currentPage = 1;
+                this.applyFilterAndRender();
+            }
+
+            setViewMode(mode) {
+                if (STATE.viewMode === mode) return;
+                STATE.viewMode = mode;
+                STATE.currentPage = 1;
+                
+                const activeClass = "bg-slate-600 text-white";
+                const inactiveClass = "hover:bg-slate-700/50 text-slate-400";
+                
+                if (mode === 'grid') {
+                    this.gridBtn.className = `p-1.5 rounded transition-all ${activeClass}`;
+                    this.listBtn.className = `p-1.5 rounded transition-all ${inactiveClass}`;
+                    this.container.className = "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 pb-20";
+                    this.listHeader.classList.add('hidden');
+                } else {
+                    this.gridBtn.className = `p-1.5 rounded transition-all ${inactiveClass}`;
+                    this.listBtn.className = `p-1.5 rounded transition-all ${activeClass}`;
+                    this.container.className = "flex flex-col gap-2 pb-20";
+                    this.listHeader.classList.remove('hidden');
+                }
+                
+                this.applyFilterAndRender();
+            }
+
+            nextPage() {
+                const pageSize = STATE.viewMode === 'grid' ? CONFIG.PAGE_SIZE_GRID : CONFIG.PAGE_SIZE_LIST;
+                const maxPage = Math.ceil(STATE.filteredData.length / pageSize);
+                if (STATE.currentPage < maxPage) {
+                    STATE.currentPage++;
+                    this.render();
+                    document.getElementById('main-container').scrollTop = 0; 
+                }
+            }
+
+            prevPage() {
+                if (STATE.currentPage > 1) {
+                    STATE.currentPage--;
+                    this.render();
+                    document.getElementById('main-container').scrollTop = 0;
+                }
+            }
+
+            applyFilterAndRender() {
+                const q = STATE.searchQuery;
+                if (!q) {
+                    STATE.filteredData = STATE.allData;
+                } else {
+                    STATE.filteredData = STATE.allData.filter(item => {
+                        return (item.HostName && item.HostName.toLowerCase().includes(q)) ||
+                               (item.IPAddr && item.IPAddr.toLowerCase().includes(q)) ||
+                               (item.PingHost && item.PingHost.toLowerCase().includes(q));
+                    });
+                }
+                this.render();
+            }
+
+            render() {
+                const pageSize = STATE.viewMode === 'grid' ? CONFIG.PAGE_SIZE_GRID : CONFIG.PAGE_SIZE_LIST;
+                const total = STATE.filteredData.length;
+                const maxPage = Math.max(1, Math.ceil(total / pageSize));
+                
+                if (STATE.currentPage > maxPage) STATE.currentPage = maxPage;
+
+                const start = (STATE.currentPage - 1) * pageSize;
+                const end = start + pageSize;
+                const pageData = STATE.filteredData.slice(start, end);
+
+                document.getElementById('page-current').innerText = STATE.currentPage;
+                document.getElementById('page-total').innerText = maxPage;
+                document.getElementById('btn-prev').disabled = STATE.currentPage === 1;
+                document.getElementById('btn-next').disabled = STATE.currentPage === maxPage;
+
+                const emptyState = document.getElementById('empty-state');
+                if (total === 0) {
+                    this.container.innerHTML = '';
+                    emptyState.classList.remove('hidden');
+                    return;
+                } else {
+                    emptyState.classList.add('hidden');
+                }
+
+                let html = '';
+                if (STATE.viewMode === 'grid') {
+                    html = pageData.map(item => this.createCardHTML(item)).join('');
+                } else {
+                    html = pageData.map(item => this.createListHTML(item)).join('');
+                }
+                
+                this.container.innerHTML = html;
+            }
+
+            // ================= Modal 逻辑 =================
+            openDetail(id) {
+                const data = STATE.allData.find(d => d.id === id);
+                if (!data) return;
+
+                STATE.modalOpen = true;
+                
+                // 1. 设置头部基本信息
+                document.getElementById('modal-hostname').innerText = data.HostName;
+                document.getElementById('modal-ip').innerText = data.IPAddr;
+                document.getElementById('modal-client').innerText = data.ReportClient || 'Unknown';
+                document.getElementById('modal-report-time').innerText = formatTime(data.ReportTime);
+                
+                const badge = document.getElementById('modal-status-badge');
+                if (data.Online) {
+                    badge.className = "px-2 py-0.5 rounded text-xs border bg-green-900/30 border-green-500 text-green-400";
+                    badge.innerText = "在线";
+                } else {
+                    badge.className = "px-2 py-0.5 rounded text-xs border bg-red-900/30 border-red-500 text-red-400";
+                    badge.innerText = "离线";
+                }
+
+                // 2. 生成详细内容 HTML
+                const memTotal = parseFloat(data.MemTotal);
+                const memUsed = memTotal - parseFloat(data.MemAvailable);
+                const memPercent = memTotal > 0 ? ((memUsed / memTotal) * 100).toFixed(2) : 0;
+                
+                // 磁盘处理
+                let diskHtml = '';
+                if (data.Disks) {
+                    for (let [path, size] of Object.entries(data.Disks)) {
+                        const [total, avail] = size;
+                        const used = total - avail;
+                        const pct = total > 0 ? ((used/total)*100).toFixed(1) : 0;
+                        diskHtml += `
+                            <div class="mb-3 last:mb-0">
+                                <div class="flex justify-between text-xs mb-1 text-slate-300">
+                                    <span>${path}</span>
+                                    <span>${formatBytes(used)} / ${formatBytes(total)} (${pct}%)</span>
+                                </div>
+                                <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-purple-500 h-full rounded-full" style="width: ${pct}%"></div>
+                                </div>
+                                <div class="text-xs text-slate-500 mt-0.5 text-right">剩余: ${formatBytes(avail)}</div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    diskHtml = '<div class="text-slate-500">无磁盘信息</div>';
+                }
+
+                // 准备安全数据
+                const loadVal = getLoadValue(data.Load);
+                const pingVal = getPingValue(data.Ping);
+                
+                // NEW: 优雅处理空数据展示
+                const pingDisplay = pingVal > 0 ? `<span class="text-white font-mono mr-2">${pingVal}ms</span>` : `<span class="text-slate-600 font-mono mr-2">--</span>`;
+                const pingHostDisplay = data.PingHost 
+                    ? `<span class="text-xs px-1.5 py-0.5 rounded bg-slate-700 text-slate-300">${data.PingHost}</span>` 
+                    : `<span class="text-xs px-1.5 py-0.5 rounded bg-slate-800 text-slate-600 border border-slate-700">--</span>`;
+
+                const body = document.getElementById('modal-body');
+                body.innerHTML = `
+                    <!-- 第一行：基础状态 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-3">
+                            <div class="flex justify-between border-b border-slate-700/50 pb-2">
+                                <span class="text-slate-400">运行时间</span>
+                                <span class="text-white font-mono">${formatUptime(data.Uptime)}</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-700/50 pb-2">
+                                <span class="text-slate-400">负载 (Load)</span>
+                                <span class="text-white font-mono">${loadVal}</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-700/50 pb-2">
+                                <span class="text-slate-400">网络延迟 (Ping)</span>
+                                <span>
+                                    ${pingDisplay}
+                                    ${pingHostDisplay}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-800/30 rounded-lg p-4 border border-slate-700/50">
+                            <h4 class="text-xs font-bold text-slate-400 uppercase mb-3">CPU 信息</h4>
+                            <div class="text-sm text-white mb-1">${data.CPUModel?.Name || 'Unknown CPU'}</div>
+                            <div class="text-xs text-slate-500 flex justify-between">
+                                <span>Vendor: ${data.CPUModel?.Vendor || 'Unknown'}</span>
+                                <span>核心数: ${data.CoreNum}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 第二行：内存 -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">内存详情 (Memory)</h4>
+                        <div class="bg-slate-800/30 rounded-lg p-4 border border-slate-700/50">
+                            <div class="flex justify-between text-xs mb-2">
+                                <span class="text-slate-300">总计: ${formatBytes(memTotal)}</span>
+                                <span class="text-slate-300">进程: ${formatBytes(memUsed)}</span>
+                            </div>
+                            <div class="w-full bg-slate-700 h-3 rounded-full overflow-hidden mb-2">
+                                <div class="bg-green-500 h-full rounded-full relative" style="width: ${memPercent}%">
+                                </div>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-slate-500">可用: ${formatBytes(parseFloat(data.MemAvailable))}</span>
+                                <span class="text-green-400 font-bold">${memPercent}%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 第三行：网络 & 磁盘 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 网络 -->
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">网络状况 (Network)</h4>
+                            <div class="bg-slate-800/30 rounded-lg p-4 border border-slate-700/50 h-full space-y-4">
+                                <div>
+                                    <div class="text-xs text-slate-400 mb-1">实时速率</div>
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div class="bg-slate-900/50 p-2 rounded">
+                                            <div class="text-[10px] text-emerald-400">下载 (In)</div>
+                                            <div class="font-mono text-white">↓ ${formatSpeed(data.Network?.[0])}</div>
+                                        </div>
+                                        <div class="bg-slate-900/50 p-2 rounded">
+                                            <div class="text-[10px] text-sky-400">上传 (Out)</div>
+                                            <div class="font-mono text-white">↑ ${formatSpeed(data.Network?.[1])}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-slate-400 mb-1">累计流量 (Traffic)</div>
+                                    <div class="flex justify-between text-xs font-mono text-slate-300 border-t border-slate-700 pt-2">
+                                        <span>入: ${formatBytes(data.NetworkRT?.[0])}</span>
+                                        <span>出: ${formatBytes(data.NetworkRT?.[1])}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 磁盘 -->
+                        <div>
+                            <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">磁盘状态 (Disks)</h4>
+                            <div class="bg-slate-800/30 rounded-lg p-4 border border-slate-700/50 h-full">
+                                ${diskHtml}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 额外信息 -->
+                    ${data.CMDPrev ? `
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-400 uppercase mb-2">上一个命令 (Prev Command)</h4>
+                        <div class="bg-black/30 rounded p-3 font-mono text-xs text-slate-300 border border-slate-700">
+                            > ${data.CMDPrev}
+                        </div>
+                    </div>
+                    ` : ''}
+                `;
+
+                // 3. 显示 Modal (带动画)
+                this.modal.classList.remove('hidden');
+                // 强制重绘以触发 transition
+                requestAnimationFrame(() => {
+                    this.modalBackdrop.classList.remove('opacity-0');
+                    this.modalPanel.classList.remove('opacity-0', 'scale-95');
+                });
+            }
+
+            closeModal() {
+                this.modalBackdrop.classList.add('opacity-0');
+                this.modalPanel.classList.add('opacity-0', 'scale-95');
+                
+                setTimeout(() => {
+                    this.modal.classList.add('hidden');
+                    STATE.modalOpen = false;
+                }, 300); // 等待动画结束
+            }
+
+            // ================= HTML 生成 =================
+            createCardHTML(data) {
+                const isOnline = data.Online;
+                const statusDot = isOnline ? 'bg-green-500 status-online' : 'bg-red-500';
+                const opacity = isOnline ? '' : 'opacity-60 grayscale';
+                
+                // 内存
+                const memTotal = parseFloat(data.MemTotal);
+                const memUsed = memTotal - parseFloat(data.MemAvailable);
+                const memPercent = memTotal > 0 ? ((memUsed / memTotal) * 100).toFixed(0) : 0;
+                
+                // 磁盘 (首个分区)
+                let diskPercent = 0;
+                if(data.Disks) {
+                    const disks = Object.entries(data.Disks);
+                    if(disks.length > 0) {
+                        const [total, avail] = disks[0][1];
+                        diskPercent = total > 0 ? (((total - avail) / total) * 100).toFixed(0) : 0;
+                    }
+                }
+
+                // 安全处理 Load & Ping
+                const loadVal = getLoadValue(data.Load);
+                const pingVal = getPingValue(data.Ping);
+                
+                // Display Logic for Ping
+                const pingHostDisplay = data.PingHost ? data.PingHost : '--';
+                const pingValDisplay = pingVal > 0 ? pingVal + 'ms' : ''; // 0ms 不显示数值，只显示 Host 占位
+
+                return `
+                <div onclick="app.openDetail('${data.id}')" class="clickable glass-card rounded-xl p-5 transition-smooth hover:scale-[1.01] hover:bg-slate-800/50 ${opacity}">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-2.5 h-2.5 rounded-full ${statusDot} shrink-0"></div>
+                            <div class="overflow-hidden">
+                                <h3 class="font-bold text-base truncate" title="${data.HostName}">${data.HostName}</h3>
+                                <div class="text-xs text-slate-400 font-mono truncate">${data.IPAddr}</div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-right shrink-0 text-slate-500">
+                            <div>${pingHostDisplay}</div>
+                            <!-- 0ms 时隐藏数值 -->
+                            ${pingVal > 0 ? `<div class="text-blue-400 font-mono">${pingVal}ms</div>` : '<div class="text-slate-700">--</div>'}
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3 text-xs mb-3">
+                        <div class="bg-slate-900/50 rounded p-2 border border-white/5">
+                            <div class="text-slate-400 mb-1">Load</div>
+                            <div class="flex items-end gap-1">
+                                <span class="text-lg font-mono font-bold text-white">${loadVal}</span>
+                                <span class="text-[10px] text-slate-500 mb-1">/ ${data.CoreNum}C</span>
+                            </div>
+                        </div>
+                        <div class="bg-slate-900/50 rounded p-2 border border-white/5 relative overflow-hidden group">
+                            <div class="relative z-10">
+                                <div class="text-slate-400 mb-1">RAM</div>
+                                <div class="flex items-end justify-between">
+                                    <span class="text-lg font-mono font-bold text-white">${memPercent}%</span>
+                                    <span class="text-[10px] text-slate-500 mb-1">${formatBytes(memUsed, 0)}</span>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-0 left-0 h-1 bg-green-500/50 progress-bar" style="width: ${memPercent}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between items-center text-slate-400">
+                            <span>Network</span>
+                            <span class="font-mono text-slate-300">
+                                ↓${formatSpeed(data.Network?.[0]).split(' ')[0]}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-400 w-12 shrink-0">Disk</span>
+                            <div class="flex-grow bg-slate-700/50 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-purple-500 h-full rounded-full" style="width: ${diskPercent}%"></div>
+                            </div>
+                            <span class="text-slate-500 font-mono w-8 text-right">${diskPercent}%</span>
+                        </div>
+                    </div>
+                </div>`;
+            }
+
+            createListHTML(data) {
+                const isOnline = data.Online;
+                const statusDot = isOnline ? 'bg-green-500' : 'bg-red-500';
+                const opacity = isOnline ? '' : 'opacity-60 grayscale';
+                
+                const memTotal = parseFloat(data.MemTotal);
+                const memUsed = memTotal - parseFloat(data.MemAvailable);
+                const memPercent = memTotal > 0 ? ((memUsed / memTotal) * 100).toFixed(0) : 0;
+                
+                const netIn = formatSpeed(data.Network?.[0]);
+
+                // 安全数据
+                const loadVal = getLoadValue(data.Load);
+                const pingVal = getPingValue(data.Ping);
+                
+                // Display Logic
+                const pingHostDisplay = data.PingHost 
+                    ? `<span class="px-1.5 py-0.5 rounded bg-slate-700 border border-slate-600">${data.PingHost}</span>` 
+                    : `<span class="px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-600">--</span>`;
+                
+                const pingValDisplay = pingVal > 0 
+                    ? `<span>${pingVal}ms</span>` 
+                    : `<span class="text-slate-600">--</span>`;
+
+                return `
+                <div onclick="app.openDetail('${data.id}')" class="clickable list-row glass-panel rounded-lg p-3 grid grid-cols-1 md:grid-cols-12 gap-2 md:gap-4 items-center text-sm ${opacity}">
+                    <div class="col-span-1 md:col-span-2 flex items-center gap-3 overflow-hidden">
+                        <div class="w-2 h-2 rounded-full ${statusDot} shrink-0"></div>
+                        <div class="min-w-0">
+                            <div class="font-bold truncate" title="${data.HostName}">${data.HostName}</div>
+                            <div class="text-xs text-slate-400 font-mono truncate">${data.IPAddr}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-span-1 md:col-span-2 hidden md:flex items-center gap-2 text-xs text-slate-400">
+                        ${pingHostDisplay}
+                        ${pingValDisplay}
+                    </div>
+
+                    <div class="col-span-1 md:col-span-2 flex items-center gap-2">
+                        <div class="flex-grow">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-400">Load</span>
+                                <span class="font-mono">${loadVal}</span>
+                            </div>
+                            <div class="w-full bg-slate-700 h-1 rounded-full">
+                                <div class="bg-blue-500 h-1 rounded-full" style="width: ${Math.min(parseFloat(loadVal) * 10, 100)}%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-span-1 md:col-span-2 flex items-center gap-2">
+                         <div class="flex-grow">
+                            <div class="flex justify-between text-xs mb-1">
+                                <span class="text-slate-400">RAM</span>
+                                <span class="font-mono">${memPercent}%</span>
+                            </div>
+                            <div class="w-full bg-slate-700 h-1 rounded-full">
+                                <div class="bg-green-500 h-1 rounded-full" style="width: ${memPercent}%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-span-1 md:col-span-2 font-mono text-xs text-slate-400">
+                        <div>↓ ${netIn}</div>
+                    </div>
+
+                    <div class="col-span-1 md:col-span-2 hidden xl:block text-right text-xs text-slate-500 font-mono">
+                        ${formatUptime(data.Uptime).split(' ')[0]}
+                    </div>
+                </div>`;
+            }
+        }
+
+        function generateMockData(count) {
+            const data = {};
+            for(let i=0; i<count; i++) {
+                const id = `srv-${i}`;
+                const totalMem = 16 * 1024 * 1024; // 16GB
+                const usedMem = Math.random() * totalMem;
+                
+                const netIn = Math.random() * 500000;
+                const netOut = Math.random() * 200000;
+
+                data[id] = {
+                    HostName: `Server-Node-${i+1}`,
+                    IPAddr: `192.168.1.${100 + i}`,
+                    Online: Math.random() > 0.05,
+                    Uptime: Math.floor(Math.random() * 1000000),
+                    Load: [(Math.random() * 2).toFixed(2), 0, 0], // Mock 为数组，对齐真实数据
+                    CPUModel: { Name: 'Intel Xeon Gold 6133', Vendor: 'Intel' },
+                    CoreNum: 16,
+                    MemTotal: totalMem,
+                    MemAvailable: totalMem - usedMem,
+                    MemProc: usedMem,
+                    Network: [netIn, netOut],
+                    NetworkRT: [netIn * 10000, netOut * 5000], 
+                    Disks: { 
+                        '/': [100000000, 50000000],
+                        '/data': [500000000, 20000000] 
+                    },
+                    Ping: Math.floor(Math.random() * 80), // Mock 是数字，但真实环境可能是对象
+                    PingHost: ['CN-HK', 'US-LA', 'JP-TYO'][Math.floor(Math.random()*3)],
+                    ReportTime: Date.now() / 1000,
+                    ReportClient: 'v2.0.1',
+                    CMDPrev: Math.random() > 0.8 ? 'apt update && apt upgrade -y' : '' 
+                };
+            }
+            return data;
+        }
+
+        const app = new App();
+        app.container.className = "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 pb-20";
+        window.onload = () => app.init();
+        window.app = app;
+
+    </script>
+</body>
+</html>
