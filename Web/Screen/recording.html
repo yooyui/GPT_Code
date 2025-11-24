@@ -1,173 +1,415 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enhanced Screen Recorder</title>
-<style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 10px;
-    padding: 0;
-    background-color: #f4f4f4;
-    text-align: center;
-}
-
-button {
-    margin: 5px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-video {
-    max-width: 100%;
-    margin-top: 10px;
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScreenCapture Pro - 創意錄屏控制台</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* Custom Animations */
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+        .animate-shimmer {
+            animation: shimmer 1.5s infinite;
+        }
+        
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+        }
+        
+        body {
+            background-color: #020617; /* slate-950 */
+            margin: 0;
+            font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+    </style>
 </head>
 <body>
+    <div id="root"></div>
 
-<h1>在线录屏</h1>
-<label for="audioOptions">包括声音:</label>
-<select id="audioOptions">
-    <option value="none">无</option>
-    <option value="system">系统声音</option>
-    <option value="microphone">麦克风</option>
-    <option value="both">系统声音 + 麦克风</option>
-</select>
-<br>
-<label for="videoQuality">视频质量:</label>
-<select id="videoQuality">
-    <option value="1080">1080p</option>
-    <option value="720">720p</option>
-    <option value="480">480p</option>
-    <option value="360">360p</option>
-</select>
-<br>
-<button id="startRecording">开始录屏</button>
-<button id="stopRecording" disabled>停止录屏</button>
-<button id="downloadVideo" style="display:none;">下载视频</button>
-<video id="screenVideo" controls></video>
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
 
-<script>
-const startRecording = document.getElementById('startRecording');
-const stopRecording = document.getElementById('stopRecording');
-const downloadVideo = document.getElementById('downloadVideo');
-const screenVideo = document.getElementById('screenVideo');
-const audioOptions = document.getElementById('audioOptions');
-const videoQuality = document.getElementById('videoQuality');
+        // --- Icon Components (Inline SVGs to replace lucide-react) ---
+        const Icon = ({ path, size = 24, className = "" }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width={size} 
+                height={size} 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className}
+            >
+                {path}
+            </svg>
+        );
 
-let mediaRecorder;
-let recordedBlobs;
-
-function getSupportedMimeType() {
-    if (MediaRecorder.isTypeSupported('video/webm; codecs=vp9')) {
-        return 'video/webm; codecs=vp9';
-    } else if (MediaRecorder.isTypeSupported('video/webm; codecs=vp8')) {
-        return 'video/webm; codecs=vp8';
-    } else {
-        console.error('VP8 and VP9 codecs are not supported.');
-        return null;
-    }
-}
-
-async function getAudioStream() {
-    if (audioOptions.value === 'microphone' || audioOptions.value === 'both') {
-        try {
-            return await navigator.mediaDevices.getUserMedia({ audio: true });
-        } catch (e) {
-            console.error('Error getting microphone audio stream:', e);
-        }
-    }
-    return null;
-}
-
-async function startScreenRecording() {
-    const videoConstraints = {};
-    const quality = videoQuality.value;
-    if (quality === '1080') {
-        videoConstraints.width = 1920;
-        videoConstraints.height = 1080;
-    } else if (quality === '720') {
-        videoConstraints.width = 1280;
-        videoConstraints.height = 720;
-    } else if (quality === '480') {
-        videoConstraints.width = 854;
-        videoConstraints.height = 480;
-    } else if (quality === '360') {
-        videoConstraints.width = 640;
-        videoConstraints.height = 360;
-    }
-    
-    try {
-        const audioStream = await getAudioStream();
-        const screenStream = await navigator.mediaDevices.getDisplayMedia({
-            video: videoConstraints,
-            audio: audioOptions.value === 'system' || audioOptions.value === 'both'
-        });
-
-        if (audioStream && screenStream.getAudioTracks().length === 0) {
-            audioStream.getAudioTracks().forEach(track => screenStream.addTrack(track));
-        }
-
-        screenVideo.srcObject = screenStream;
-        recordedBlobs = [];
-
-        const mimeType = getSupportedMimeType();
-        if (!mimeType) {
-            throw new Error('No supported video codecs found.');
-        }
-
-        mediaRecorder = new MediaRecorder(screenStream, { mimeType });
-        mediaRecorder.ondataavailable = event => {
-            if (event.data && event.data.size > 0) {
-                recordedBlobs.push(event.data);
-            }
+        const Icons = {
+            Video: <><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" /></>,
+            Mic: <><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="23" /><line x1="8" y1="23" x2="16" y2="23" /></>,
+            Monitor: <><rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /></>,
+            Settings: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></>,
+            Download: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></>,
+            Disc: <><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" /></>,
+            StopCircle: <><circle cx="12" cy="12" r="10" /><rect x="9" y="9" width="6" height="6" /></>,
+            Cpu: <><rect x="4" y="4" width="16" height="16" rx="2" ry="2" /><rect x="9" y="9" width="6" height="6" /><line x1="9" y1="1" x2="9" y2="4" /><line x1="15" y1="1" x2="15" y2="4" /><line x1="9" y1="20" x2="9" y2="23" /><line x1="15" y1="20" x2="15" y2="23" /><line x1="20" y1="9" x2="23" y2="9" /><line x1="20" y1="14" x2="23" y2="14" /><line x1="1" y1="9" x2="4" y2="9" /><line x1="1" y1="14" x2="4" y2="14" /></>,
+            Volume2: <><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" /></>,
+            VolumeX: <><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" /></>,
+            Radio: <><circle cx="12" cy="12" r="2" /><path d="M16.24 7.76a6 6 0 0 1 0 8.49" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14" /></>
         };
-        mediaRecorder.onstop = () => {
-            const superBuffer = new Blob(recordedBlobs, { type: 'video/webm' });
-            screenVideo.src = window.URL.createObjectURL(superBuffer);
-            downloadVideo.style.display = 'block';
+
+        const ScreenRecorder = () => {
+            const [isRecording, setIsRecording] = useState(false);
+            const [mediaRecorder, setMediaRecorder] = useState(null);
+            const [recordedBlobs, setRecordedBlobs] = useState([]);
+            const [videoUrl, setVideoUrl] = useState(null);
+            const [audioSource, setAudioSource] = useState('system'); 
+            const [quality, setQuality] = useState('1080');
+            const [timer, setTimer] = useState(0);
+            const [error, setError] = useState('');
+
+            const videoRef = useRef(null);
+            const timerRef = useRef(null);
+
+            // Format Time HH:MM:SS
+            const formatTime = (seconds) => {
+                const getTwoDigits = (num) => String(num).padStart(2, '0');
+                const h = Math.floor(seconds / 3600);
+                const m = Math.floor((seconds % 3600) / 60);
+                const s = seconds % 60;
+                return `${getTwoDigits(h)}:${getTwoDigits(m)}:${getTwoDigits(s)}`;
+            };
+
+            // Timer Effect
+            useEffect(() => {
+                if (isRecording) {
+                    timerRef.current = setInterval(() => {
+                        setTimer((prev) => prev + 1);
+                    }, 1000);
+                } else {
+                    clearInterval(timerRef.current);
+                    if (!videoUrl) setTimer(0);
+                }
+                return () => clearInterval(timerRef.current);
+            }, [isRecording, videoUrl]);
+
+            // Cleanup URL
+            useEffect(() => {
+                return () => {
+                    if (videoUrl) URL.revokeObjectURL(videoUrl);
+                };
+            }, [videoUrl]);
+
+            const getSupportedMimeType = () => {
+                const types = [
+                    'video/webm; codecs=vp9',
+                    'video/webm; codecs=vp8',
+                    'video/webm'
+                ];
+                for (let type of types) {
+                    if (MediaRecorder.isTypeSupported(type)) return type;
+                }
+                return null;
+            };
+
+            const startRecording = async () => {
+                setError('');
+                setVideoUrl(null);
+                setRecordedBlobs([]);
+                setTimer(0);
+
+                const videoConstraints = {};
+                switch (quality) {
+                    case '1080': videoConstraints.height = 1080; break;
+                    case '720': videoConstraints.height = 720; break;
+                    case '480': videoConstraints.height = 480; break;
+                    case '360': videoConstraints.height = 360; break;
+                    default: videoConstraints.height = 1080;
+                }
+
+                try {
+                    let audioStream = null;
+                    
+                    if (audioSource === 'microphone' || audioSource === 'both') {
+                        audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    }
+
+                    const screenStream = await navigator.mediaDevices.getDisplayMedia({
+                        video: videoConstraints,
+                        audio: audioSource === 'system' || audioSource === 'both'
+                    });
+
+                    const combinedStream = new MediaStream([
+                        ...screenStream.getVideoTracks(),
+                        ...screenStream.getAudioTracks()
+                    ]);
+
+                    if (audioStream) {
+                        audioStream.getAudioTracks().forEach(track => combinedStream.addTrack(track));
+                    }
+
+                    if (videoRef.current) {
+                        videoRef.current.srcObject = combinedStream;
+                    }
+
+                    const mimeType = getSupportedMimeType();
+                    if (!mimeType) throw new Error('瀏覽器不支援 WebM 錄製');
+
+                    const recorder = new MediaRecorder(combinedStream, { mimeType });
+                    const localBlobs = [];
+
+                    recorder.ondataavailable = (event) => {
+                        if (event.data && event.data.size > 0) {
+                            localBlobs.push(event.data);
+                        }
+                    };
+
+                    recorder.onstop = () => {
+                        const superBuffer = new Blob(localBlobs, { type: 'video/webm' });
+                        const url = URL.createObjectURL(superBuffer);
+                        setVideoUrl(url);
+                        setRecordedBlobs(localBlobs);
+                        
+                        combinedStream.getTracks().forEach(track => track.stop());
+                        if(audioStream) audioStream.getTracks().forEach(track => track.stop());
+                        
+                        if (videoRef.current) {
+                            videoRef.current.srcObject = null;
+                            videoRef.current.src = url;
+                            videoRef.current.controls = true;
+                        }
+                        setIsRecording(false);
+                    };
+
+                    screenStream.getVideoTracks()[0].onended = () => {
+                        if (recorder.state !== 'inactive') recorder.stop();
+                    };
+
+                    recorder.start();
+                    setMediaRecorder(recorder);
+                    setIsRecording(true);
+
+                } catch (err) {
+                    console.error("Recording error:", err);
+                    
+                    let errorMessage = '無法啟動錄製：' + err.message;
+                    
+                    // Handle specific iframe permission error
+                    if (err.name === 'NotAllowedError' && err.message.includes('permissions policy')) {
+                        errorMessage = '⚠️ 瀏覽器安全限制：預覽視窗無法進行螢幕錄製。\n請下載此 .html 檔案，並在瀏覽器中直接開啟即可使用完整功能。';
+                    } else if (err.name === 'NotAllowedError') {
+                        errorMessage = '您取消了螢幕錄製授權，或瀏覽器拒絕了請求。';
+                    }
+
+                    setError(errorMessage);
+                }
+            };
+
+            const stopRecording = () => {
+                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                    mediaRecorder.stop();
+                }
+            };
+
+            const downloadVideo = () => {
+                const blob = new Blob(recordedBlobs, { type: 'video/webm' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `recording-${new Date().toISOString()}.webm`;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                }, 100);
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-4 relative overflow-hidden selection:bg-purple-500 selection:text-white">
+                
+                {/* Background Decor */}
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+                    <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px] animate-pulse"></div>
+                    <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-600/20 rounded-full blur-[120px] animate-pulse" style={{animationDelay: '1000ms'}}></div>
+                </div>
+
+                {/* Main Container */}
+                <div className="glass-panel relative z-10 w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
+                    
+                    {/* Left Panel: Preview Stage */}
+                    <div className="flex-1 p-6 flex flex-col gap-4 relative group">
+                    
+                    {/* Header */}
+                    <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/20">
+                                <Icon path={Icons.Video} size={18} className="text-white" />
+                            </div>
+                            <h1 className="text-xl font-bold tracking-tight text-slate-100">
+                                Screen<span className="text-purple-400">Capture</span> Pro
+                            </h1>
+                        </div>
+                        
+                        {/* Status Pill */}
+                        <div className={`px-3 py-1 rounded-full text-xs font-mono font-medium flex items-center gap-2 transition-all duration-300 ${isRecording ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}`}>
+                            <div className={`w-2 h-2 rounded-full ${isRecording ? 'bg-red-500 animate-ping' : 'bg-slate-500'}`}></div>
+                            {isRecording ? formatTime(timer) : 'READY'}
+                        </div>
+                    </div>
+
+                    {/* Video Container */}
+                    <div className={`relative flex-1 bg-black rounded-2xl overflow-hidden shadow-inner border border-slate-800 aspect-video flex items-center justify-center transition-all duration-500 ${isRecording ? 'ring-2 ring-red-500/50 shadow-[0_0_30px_-5px_rgba(239,68,68,0.3)]' : ''}`}>
+                        
+                        <video 
+                            ref={videoRef} 
+                            autoPlay 
+                            playsInline 
+                            muted 
+                            className={`w-full h-full object-contain z-10 ${!isRecording && !videoUrl ? 'hidden' : 'block'}`}
+                        ></video>
+
+                        {/* Placeholder / Empty State */}
+                        {!isRecording && !videoUrl && (
+                        <div className="text-center text-slate-600 flex flex-col items-center">
+                            <div className="w-20 h-20 bg-slate-800/50 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                                <Icon path={Icons.Monitor} size={40} className="text-slate-500" />
+                            </div>
+                            <p className="text-sm font-medium">預覽畫面將顯示於此</p>
+                            <p className="text-xs opacity-60 mt-1">配置右側設定後開始錄製</p>
+                        </div>
+                        )}
+                        
+                        {/* Error Message */}
+                        {error && (
+                        <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-20 text-red-400 p-6 text-center whitespace-pre-wrap">
+                            <p>{error}</p>
+                        </div>
+                        )}
+                    </div>
+                    </div>
+
+                    {/* Right Panel: Controls */}
+                    <div className="w-full lg:w-80 bg-slate-800/40 border-l border-slate-700/50 p-6 flex flex-col gap-8">
+                    
+                    {/* Section: Audio */}
+                    <div>
+                        <div className="flex items-center gap-2 text-slate-400 mb-3 text-sm font-semibold uppercase tracking-wider">
+                            <Icon path={Icons.Volume2} size={14} /> 音訊來源
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                        {[
+                            { id: 'none', label: '靜音', icon: Icons.VolumeX },
+                            { id: 'system', label: '系統聲音', icon: Icons.Monitor },
+                            { id: 'microphone', label: '麥克風', icon: Icons.Mic },
+                            { id: 'both', label: '混合錄音', icon: Icons.Radio },
+                        ].map((opt) => (
+                            <button
+                                key={opt.id}
+                                disabled={isRecording}
+                                onClick={() => setAudioSource(opt.id)}
+                                className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all duration-200 ${
+                                    audioSource === opt.id 
+                                    ? 'bg-purple-600/20 border-purple-500/50 text-purple-200 shadow-lg shadow-purple-900/20' 
+                                    : 'bg-slate-800/50 border-slate-700 text-slate-400 hover:bg-slate-700 hover:border-slate-600'
+                                } ${isRecording ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                                <Icon path={opt.icon} size={20} />
+                                <span className="text-xs font-medium">{opt.label}</span>
+                            </button>
+                        ))}
+                        </div>
+                    </div>
+
+                    {/* Section: Quality */}
+                    <div>
+                        <div className="flex items-center gap-2 text-slate-400 mb-3 text-sm font-semibold uppercase tracking-wider">
+                            <Icon path={Icons.Settings} size={14} /> 畫質設定
+                        </div>
+                        <div className="flex bg-slate-900/80 p-1 rounded-lg border border-slate-700">
+                        {['1080', '720', '480'].map((q) => (
+                            <button
+                                key={q}
+                                disabled={isRecording}
+                                onClick={() => setQuality(q)}
+                                className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
+                                    quality === q
+                                    ? 'bg-slate-700 text-white shadow-sm'
+                                    : 'text-slate-500 hover:text-slate-300'
+                                } ${isRecording ? 'cursor-not-allowed' : ''}`}
+                            >
+                                {q}p
+                            </button>
+                        ))}
+                        </div>
+                    </div>
+
+                    <div className="flex-1"></div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-col gap-3">
+                        {!isRecording ? (
+                        <button
+                            onClick={startRecording}
+                            className="w-full group relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 p-4 font-bold text-white shadow-xl shadow-purple-900/30 transition-all hover:scale-[1.02] hover:shadow-purple-900/50 active:scale-[0.98]"
+                        >
+                            <div className="relative z-10 flex items-center justify-center gap-2">
+                                <Icon path={Icons.Disc} className="animate-pulse" /> 開始錄製
+                            </div>
+                            <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-shimmer" />
+                        </button>
+                        ) : (
+                        <button
+                            onClick={stopRecording}
+                            className="w-full rounded-2xl bg-red-500/10 border border-red-500/50 p-4 font-bold text-red-400 transition-all hover:bg-red-500/20 active:scale-[0.98] flex items-center justify-center gap-2"
+                        >
+                            <Icon path={Icons.StopCircle} /> 停止錄製
+                        </button>
+                        )}
+
+                        {videoUrl && !isRecording && (
+                        <button
+                            onClick={downloadVideo}
+                            className="w-full rounded-2xl bg-slate-800 border border-slate-700 p-4 font-bold text-emerald-400 transition-all hover:bg-emerald-500/10 hover:border-emerald-500/50 active:scale-[0.98] flex items-center justify-center gap-2 animate-in slide-in-from-bottom-2 fade-in duration-300"
+                        >
+                            <Icon path={Icons.Download} size={20} /> 下載影片
+                        </button>
+                        )}
+                    </div>
+                    
+                    </div>
+                </div>
+                
+                <div className="mt-8 text-slate-500 text-xs flex items-center gap-1">
+                    <Icon path={Icons.Cpu} size={12} /> Powered by Modern Web APIs (MediaStream, MediaRecorder)
+                </div>
+
+                </div>
+            );
         };
-        mediaRecorder.start();
 
-        startRecording.disabled = true;
-        stopRecording.disabled = false;
-
-        screenStream.getVideoTracks()[0].onended = () => {
-            stopRecording.click();
-        };
-    } catch (error) {
-        console.error('Error starting screen recording:', error);
-    }
-}
-
-function stopScreenRecording() {
-    mediaRecorder.stop();
-    startRecording.disabled = false;
-    stopRecording.disabled = true;
-}
-
-function downloadRecordedVideo() {
-    const blob = new Blob(recordedBlobs, { type: 'video/webm' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = 'recorded-video.webm';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => {
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-    }, 100);
-}
-
-startRecording.addEventListener('click', startScreenRecording);
-stopRecording.addEventListener('click', stopScreenRecording);
-downloadVideo.addEventListener('click', downloadRecordedVideo);
-</script>
-
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<ScreenRecorder />);
+    </script>
 </body>
 </html>
