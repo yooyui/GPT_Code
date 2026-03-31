@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YOOYUI Doc Style | Landing Sample</title>
+  <meta
+    name="description"
+    content="Landing page sample for the YOOYUI Doc Style skill."
+  />
+  <link rel="stylesheet" href="../templates/docs-theme.base.css" />
+  <style>
+    body.page-landing {
+      --accent-1: #ff5c8a;
+      --accent-2: #1db9ff;
+      --accent-3: #ffb347;
+    }
+  </style>
+</head>
+<body class="page-landing">
+  <div class="bg-layer grid"></div>
+  <div class="bg-layer sparkles"></div>
+  <div class="bg-layer energy-lines"></div>
+  <div class="bg-layer bg-aurora"></div>
+  <div class="bg-layer bg-wave"></div>
+  <div class="bg-layer bg-bubbles" aria-hidden="true">
+    <span style="--size: 68px; --x: 8%; --y: 20%; --speed: 7.5s; --delay: -1s;"></span>
+    <span style="--size: 88px; --x: 86%; --y: 14%; --speed: 9s; --delay: -2.3s;"></span>
+    <span style="--size: 52px; --x: 74%; --y: 46%; --speed: 8.4s; --delay: -3.2s;"></span>
+    <span style="--size: 110px; --x: 12%; --y: 76%; --speed: 10s; --delay: -1.5s;"></span>
+    <span style="--size: 72px; --x: 58%; --y: 82%; --speed: 8.6s; --delay: -4.1s;"></span>
+  </div>
+
+  <main class="page">
+    <section class="hero" id="hero">
+      <div class="hero-glow"></div>
+      <div class="hero-orbits" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="hero-top">
+        <span class="tag hot">DOC ENTRY</span>
+        <span class="tag">Landing Page</span>
+        <span class="tag">Soft Launch</span>
+      </div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="lead">PASTEL START / STATIC DOC ENTRY</span>
+          <h1>
+            用一张浅色入口页
+            <span>先把定位说清楚</span>
+          </h1>
+          <span class="title-note">Welcome Layer / スタートページ</span>
+          <p>
+            这个示例展示了 Landing / Home 配方：更强的 hero、更少的导航、更直接的速读结构，
+            适合做文档入口页、协议入口页、服务说明入口页。
+          </p>
+          <div class="hero-meta">
+            <span class="hero-chip"><b>ENTRY</b> 首页优先讲定位</span>
+            <span class="hero-chip"><b>SCAN</b> 先看到重点，再决定要不要细读</span>
+            <span class="hero-chip"><b>SOFT</b> 轻色彩和轻动效一起工作</span>
+          </div>
+        </div>
+        <aside class="hero-panel">
+          <div class="panel-title">
+            <strong>速读摘要</strong>
+            <span class="panel-kana">Quick Scan</span>
+          </div>
+          <div class="status-grid">
+            <div class="status-item">
+              <span>Purpose</span>
+              <strong>作为入口页起稿</strong>
+              <div class="status-badge free">Entry</div>
+              <p>这一页最重要的是先解释你是谁、这页讲什么、用户接下来去哪。</p>
+            </div>
+            <div class="status-item">
+              <span>Weight</span>
+              <strong>Hero 权重最高</strong>
+              <div class="status-badge log">Hero First</div>
+              <p>用户一进来就该知道主题，而不是先被一堆细节淹没。</p>
+            </div>
+            <div class="status-item">
+              <span>Modules</span>
+              <strong>卡片够用即可</strong>
+              <div class="status-badge warn">Lean</div>
+              <p>入口页不需要把所有模块都铺满，能讲清定位和边界就够了。</p>
+            </div>
+            <div class="status-item">
+              <span>Deploy</span>
+              <strong>相对路径友好</strong>
+              <div class="status-badge note">Portable</div>
+              <p>适合作为静态入口页直接预览，也适合作为多页面站的起点。</p>
+            </div>
+          </div>
+          <div class="summary">推荐在第二屏用 cards 展开范围、费用、风险、隐私、免责等核心信息。</div>
+        </aside>
+      </div>
+    </section>
+
+    <div class="section-head" id="cards">
+      <h2>Landing 页常见三种信息</h2>
+      <p>建议把首页信息压缩成少量高价值卡片，而不是所有说明一次性写完。</p>
+    </div>
+
+    <section class="cards">
+      <article class="card">
+        <div class="card-top">
+          <div class="icon">✨</div>
+          <div>
+            <span class="eyebrow">01 / Position</span>
+            <h3>这是什么</h3>
+          </div>
+        </div>
+        <p>用一句清楚的说明，告诉用户当前页面是服务入口、协议入口，还是一个说明页集合的首页。</p>
+      </article>
+      <article class="card">
+        <div class="card-top">
+          <div class="icon">🧭</div>
+          <div>
+            <span class="eyebrow">02 / Scope</span>
+            <h3>这页涵盖什么</h3>
+          </div>
+        </div>
+        <p>把费用、边界、更新、协议、隐私这些信息分别放到对应页面，而不是全部塞在 hero 里。</p>
+      </article>
+      <article class="card">
+        <div class="card-top">
+          <div class="icon">🫧</div>
+          <div>
+            <span class="eyebrow">03 / Mood</span>
+            <h3>为什么看起来要轻</h3>
+          </div>
+        </div>
+        <p>说明页也可以友好、温和、可进入，但这种轻盈要服务信息结构，而不是喧宾夺主。</p>
+      </article>
+    </section>
+
+    <section class="notice">
+      <h3>Landing sample note</h3>
+      <p>
+        如果你只是需要一个入口页，这个示例已经足够起稿。后续再按需要拆出 About、Announcement、Privacy
+        或 Agreement 页面即可。
+      </p>
+    </section>
+
+    <footer class="site-footer">
+      <div>
+        <strong>LANDING SAMPLE</strong><br />
+        Example entry page for the portable skill package.
+      </div>
+      <div class="footer-links">
+        <a href="#hero">Top</a>
+        <a href="#cards">Cards</a>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

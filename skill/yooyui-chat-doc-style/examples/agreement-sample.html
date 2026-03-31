@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YOOYUI Doc Style | Agreement Sample</title>
+  <meta name="description" content="Agreement page sample for the YOOYUI Doc Style skill." />
+  <link rel="stylesheet" href="../templates/docs-theme.base.css" />
+</head>
+<body class="page-agreement">
+  <div class="bg-layer grid"></div>
+  <div class="bg-layer sparkles"></div>
+  <div class="bg-layer energy-lines"></div>
+  <div class="bg-layer bg-aurora"></div>
+  <div class="bg-layer bg-wave"></div>
+  <div class="bg-layer bg-bubbles" aria-hidden="true">
+    <span style="--size: 68px; --x: 8%; --y: 20%; --speed: 7.5s; --delay: -1s;"></span>
+    <span style="--size: 88px; --x: 86%; --y: 14%; --speed: 9s; --delay: -2.3s;"></span>
+    <span style="--size: 52px; --x: 74%; --y: 46%; --speed: 8.4s; --delay: -3.2s;"></span>
+    <span style="--size: 110px; --x: 12%; --y: 76%; --speed: 10s; --delay: -1.5s;"></span>
+    <span style="--size: 72px; --x: 58%; --y: 82%; --speed: 8.6s; --delay: -4.1s;"></span>
+  </div>
+
+  <main class="page">
+    <nav class="doc-nav" aria-label="Agreement navigation">
+      <a class="brand" href="#hero">
+        <strong>AGREEMENT PAGE</strong>
+        <span>Terms Flow</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link active" href="#hero">Overview</a>
+        <a class="nav-link" href="#details">Structure</a>
+        <a class="nav-link" href="#cards">Terms</a>
+      </div>
+    </nav>
+
+    <section class="hero" id="hero">
+      <div class="hero-glow"></div>
+      <div class="hero-orbits" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="hero-top">
+        <span class="tag hot">USER AGREEMENT</span>
+        <span class="tag">Service Rule</span>
+        <span class="tag">利用規約</span>
+      </div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="lead">SERVICE RULE / ACCESS TERMS</span>
+          <h1>使用前请先确认 <span>服务边界与责任</span></h1>
+          <span class="title-note">ユーザー規約 / User Agreement</span>
+          <p>这个示例页展示 Agreement 配方：先给出服务范围、责任边界和风险速读，再用结构化卡片拆开关键条款。</p>
+          <div class="hero-meta">
+            <span class="hero-chip"><b>FREE</b> 当前阶段可以免费访问</span>
+            <span class="hero-chip"><b>BOUNDARY</b> 不承诺绝对可用与无限制</span>
+            <span class="hero-chip"><b>ACCEPT</b> 继续使用即视为同意条款</span>
+          </div>
+        </div>
+        <aside class="hero-panel">
+          <div class="panel-title">
+            <strong>协议速读</strong>
+            <span class="panel-kana">利用ポイント</span>
+          </div>
+          <div class="status-grid">
+            <div class="status-item"><span>Provider <em>主体</em></span><strong>由当前站点提供</strong><div class="status-badge free">Operator</div><p>页面、服务说明与规则解释以当前公开版本为准。</p></div>
+            <div class="status-item"><span>Fee <em>费用</em></span><strong>当前为免费阶段</strong><div class="status-badge log">Free Access</div><p>如未来有费率变化，通常会先通过公告页同步。</p></div>
+            <div class="status-item"><span>Stability <em>稳定</em></span><strong>无法提供绝对保证</strong><div class="status-badge warn">Best Effort</div><p>服务可能受到上游、网络和资源占用等因素影响。</p></div>
+            <div class="status-item"><span>Acceptance <em>接受</em></span><strong>使用即视为同意</strong><div class="status-badge note">Agreement Active</div><p>当你开始访问或持续使用服务时，即视为接受当前协议。</p></div>
+          </div>
+          <div class="summary">如果你无法接受当前服务边界、风险说明或责任划分，就不应继续使用。</div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="marquee-banner" aria-label="协议关键信息">
+      <article class="marquee-item"><span class="marquee-label">Effective Date</span><span class="marquee-value">当前示例版本</span><p>适合显示当前规则版本的生效状态与更新基准。</p></article>
+      <article class="marquee-item"><span class="marquee-label">Applicable Users</span><span class="marquee-value">所有访问与调用者</span><p>无论浏览页面还是实际调用，通常都会受到协议说明约束。</p></article>
+      <article class="marquee-item"><span class="marquee-label">Conflict Rule</span><span class="marquee-value">更具体说明优先</span><p>若多个页面有差异，通常以时间更晚且更具体的说明为准。</p></article>
+    </section>
+
+    <div class="section-head" id="details">
+      <h2>条款结构</h2>
+      <p>Agreement 页适合先用 detail grid 给出“你得到什么、我们保留什么、你承担什么”。</p>
+    </div>
+
+    <section class="detail-grid">
+      <article class="detail-panel"><span class="detail-label">What You Get</span><h3>你得到什么</h3><p>当前阶段可访问的能力与页面说明，而不是无限制、无条件的固定承诺。</p></article>
+      <article class="detail-panel"><span class="detail-label">What We Reserve</span><h3>我们保留什么</h3><p>我们保留调整配额、规则、文案与能力范围的权利，并通过页面同步说明。</p></article>
+      <article class="detail-panel"><span class="detail-label">What You Bear</span><h3>你承担什么</h3><p>你需要对自己的输入内容、用途、合规性和由此产生的结果负责。</p></article>
+    </section>
+
+    <section class="cards" id="cards">
+      <article class="card"><div class="card-top"><div class="icon">🌸</div><div><span class="eyebrow">01 / Provider</span><h3>服务提供方</h3></div></div><p>Agreement 页通常要先明确谁对页面、接入与规则说明负责。</p></article>
+      <article class="card"><div class="card-top"><div class="icon">🧭</div><div><span class="eyebrow">02 / Scope</span><h3>服务范围</h3></div></div><p>应说明当前提供的是哪类能力，以及哪些能力并不在承诺范围内。</p></article>
+      <article class="card"><div class="card-top"><div class="icon">💫</div><div><span class="eyebrow">03 / Fee</span><h3>服务费用</h3></div></div><p>当前是否免费、未来若变动如何通知，都适合在这里讲清楚。</p></article>
+      <article class="card"><div class="card-top"><div class="icon">🚦</div><div><span class="eyebrow">04 / Conduct</span><h3>使用要求</h3></div></div><p>应明确用户不得将服务用于违法、侵权、滥用、攻击或欺诈场景。</p></article>
+      <article class="card"><div class="card-top"><div class="icon">⚡</div><div><span class="eyebrow">05 / Availability</span><h3>稳定性与免责</h3></div></div><p>如果没有商业级 SLA，就应在 Agreement 页中清楚写出可用性边界。</p></article>
+      <article class="card"><div class="card-top"><div class="icon">🫧</div><div><span class="eyebrow">06 / Logs</span><h3>运行记录</h3></div></div><p>必要的调用时间、模型类型和运行日志记录，也应在这里与隐私页形成呼应。</p></article>
+    </section>
+
+    <section class="quote-box">
+      <p>Agreement 页不是让规则变冷，而是让用户在继续使用前，能更快理解边界、权利和责任。</p>
+    </section>
+
+    <section class="notice">
+      <h3>Agreement sample note</h3>
+      <p>Agreement 配方最关键的是“先速读结构，再展开条款，再用 notice 收束风险提醒”，而不是直接变成长条文墙。</p>
+    </section>
+
+    <footer class="footer">
+      <div><strong>AGREEMENT SAMPLE</strong><br />Example agreement page for the portable skill package.</div>
+      <div class="footer-links">
+        <a href="#hero">Overview</a>
+        <a href="#details">Structure</a>
+        <a href="#cards">Terms</a>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

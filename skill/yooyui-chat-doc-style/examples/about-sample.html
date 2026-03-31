@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YOOYUI Doc Style | About Sample</title>
+  <meta
+    name="description"
+    content="About page sample for the YOOYUI Doc Style skill."
+  />
+  <link rel="stylesheet" href="../templates/docs-theme.base.css" />
+  <style>
+    body.page-about {
+      --accent-1: #ff8c42;
+      --accent-2: #4ee0c3;
+      --accent-3: #1db9ff;
+    }
+  </style>
+</head>
+<body class="page-about">
+  <div class="bg-layer grid"></div>
+  <div class="bg-layer sparkles"></div>
+  <div class="bg-layer energy-lines"></div>
+  <div class="bg-layer bg-aurora"></div>
+  <div class="bg-layer bg-wave"></div>
+  <div class="bg-layer bg-bubbles" aria-hidden="true">
+    <span style="--size: 68px; --x: 8%; --y: 20%; --speed: 7.5s; --delay: -1s;"></span>
+    <span style="--size: 88px; --x: 86%; --y: 14%; --speed: 9s; --delay: -2.3s;"></span>
+    <span style="--size: 52px; --x: 74%; --y: 46%; --speed: 8.4s; --delay: -3.2s;"></span>
+    <span style="--size: 110px; --x: 12%; --y: 76%; --speed: 10s; --delay: -1.5s;"></span>
+    <span style="--size: 72px; --x: 58%; --y: 82%; --speed: 8.6s; --delay: -4.1s;"></span>
+  </div>
+
+  <main class="page">
+    <nav class="doc-nav" aria-label="About navigation">
+      <a class="brand" href="#hero">
+        <strong>ABOUT PAGE</strong>
+        <span>Document Flow</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link active" href="#hero">Overview</a>
+        <a class="nav-link" href="#details">Details</a>
+        <a class="nav-link" href="#cards">Cards</a>
+      </div>
+    </nav>
+
+    <section class="hero" id="hero">
+      <div class="hero-glow"></div>
+      <div class="hero-orbits" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="hero-top">
+        <span class="tag hot">ABOUT PAGE</span>
+        <span class="tag">Design Intent</span>
+        <span class="tag">Origin Story</span>
+      </div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="lead">WHY THIS PAGE / DOC FAMILY INTRO</span>
+          <h1>
+            把项目背景与设计观
+            <span>写成一页可慢读的说明</span>
+          </h1>
+          <span class="title-note">About Flow / ページ解説</span>
+          <p>
+            这个示例展示了 About 配方：保留 `doc-nav`，用 marquee 做三段速读摘要，再用 detail grid
+            和 cards 展开定位、来源、后续方向。
+          </p>
+          <div class="hero-meta">
+            <span class="hero-chip"><b>WHY</b> 为什么有这页</span>
+            <span class="hero-chip"><b>ORIGIN</b> 来源与设计意图</span>
+            <span class="hero-chip"><b>NEXT</b> 后续扩展方向</span>
+          </div>
+        </div>
+        <aside class="hero-panel">
+          <div class="panel-title">
+            <strong>About 速读</strong>
+            <span class="panel-kana">Quick Memo</span>
+          </div>
+          <div class="status-grid">
+            <div class="status-item">
+              <span>Core</span>
+              <strong>说明项目定位</strong>
+              <div class="status-badge free">Position</div>
+              <p>告诉用户你在做什么，而不是只给一个泛泛的品牌口号。</p>
+            </div>
+            <div class="status-item">
+              <span>Context</span>
+              <strong>交代背景与来路</strong>
+              <div class="status-badge log">Origin</div>
+              <p>如果有开源来源、设计原因、使用场景，都可以在这页解释清楚。</p>
+            </div>
+            <div class="status-item">
+              <span>Shape</span>
+              <strong>既轻盈也稳定</strong>
+              <div class="status-badge warn">Tone</div>
+              <p>About 页可以有品牌语感，但信息层次必须清楚，不能空泛。</p>
+            </div>
+            <div class="status-item">
+              <span>Next</span>
+              <strong>便于扩展更多说明页</strong>
+              <div class="status-badge note">Scalable</div>
+              <p>当页组继续扩展时，About 往往是最适合承接整体说明的一页。</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="marquee-banner">
+      <article class="marquee-item">
+        <span class="marquee-label">Position</span>
+        <span class="marquee-value">先说清你是谁</span>
+        <p>About 页的首要任务，是帮助用户理解项目的核心定位。</p>
+      </article>
+      <article class="marquee-item">
+        <span class="marquee-label">Origin</span>
+        <span class="marquee-value">再解释为什么这样做</span>
+        <p>设计选择、信息结构和页面风格，都可以在这里交代背景。</p>
+      </article>
+      <article class="marquee-item">
+        <span class="marquee-label">Next</span>
+        <span class="marquee-value">最后给出未来方向</span>
+        <p>让 About 不只是一页介绍，而是多页面文档体系的入口说明。</p>
+      </article>
+    </section>
+
+    <div class="section-head" id="details">
+      <h2>About 页适合展开的三类说明</h2>
+      <p>如果你不知道中段该放什么，通常从定位、来源、下一步三类内容拆就够了。</p>
+    </div>
+
+    <section class="detail-grid">
+      <article class="detail-panel">
+        <span class="detail-label">Why</span>
+        <h3>项目定位</h3>
+        <p>一句话说明你在解决什么问题，或者这组页面为谁服务。</p>
+      </article>
+      <article class="detail-panel">
+        <span class="detail-label">Origin</span>
+        <h3>设计与来源</h3>
+        <p>解释为什么选择这种视觉与信息结构，必要时也可以补充来源和致谢。</p>
+      </article>
+      <article class="detail-panel">
+        <span class="detail-label">Next</span>
+        <h3>扩展方向</h3>
+        <p>告诉用户之后还会出现哪些页面、哪些模块或哪些新的阅读入口。</p>
+      </article>
+    </section>
+
+    <div class="section-head" id="cards">
+      <h2>About 卡片示例</h2>
+      <p>用 cards 拆开更细的说明点，让 About 页不止有“故事”，也有清楚结构。</p>
+    </div>
+
+    <section class="cards">
+      <article class="card">
+        <div class="card-top">
+          <div class="icon">🌤️</div>
+          <div>
+            <span class="eyebrow">01 / Tone</span>
+            <h3>先友好，再专业</h3>
+          </div>
+        </div>
+        <p>说明页不是只能写得冰冷严肃，轻盈风格也能把边界和规则说得清楚。</p>
+      </article>
+      <article class="card">
+        <div class="card-top">
+          <div class="icon">🪄</div>
+          <div>
+            <span class="eyebrow">02 / System</span>
+            <h3>先做页，再做体系</h3>
+          </div>
+        </div>
+        <p>当 About、Privacy、Agreement 等页面一起出现时，统一主题文件会比逐页复制更稳。</p>
+      </article>
+      <article class="card">
+        <div class="card-top">
+          <div class="icon">🫶</div>
+          <div>
+            <span class="eyebrow">03 / Reading</span>
+            <h3>让人愿意读下去</h3>
+          </div>
+        </div>
+        <p>好的 About 页不会只写“我们是谁”，而是会给出节奏、层次和继续阅读的理由。</p>
+      </article>
+    </section>
+
+    <section class="quote-box">
+      <p>
+        About 页的价值，不是把一切说得很满，而是用更可进入的方式，让用户理解这组页面为什么值得继续往下看。
+      </p>
+    </section>
+
+    <footer class="footer">
+      <div>
+        <strong>ABOUT SAMPLE</strong><br />
+        Example About page for the portable skill package.
+      </div>
+      <div class="footer-links">
+        <a href="#hero">Top</a>
+        <a href="#details">Details</a>
+        <a href="#cards">Cards</a>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

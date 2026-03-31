@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YOOYUI Doc Style | Base Template</title>
+  <meta
+    name="description"
+    content="Starter template for a pastel glassmorphism documentation page."
+  />
+  <link rel="stylesheet" href="docs-theme.base.css" />
+</head>
+<body class="page-template">
+  <div class="bg-layer grid"></div>
+  <div class="bg-layer sparkles"></div>
+  <div class="bg-layer energy-lines"></div>
+  <div class="bg-layer bg-aurora"></div>
+  <div class="bg-layer bg-wave"></div>
+  <div class="bg-layer bg-bubbles" aria-hidden="true">
+    <span style="--size: 68px; --x: 8%; --y: 20%; --speed: 7.5s; --delay: -1s;"></span>
+    <span style="--size: 88px; --x: 86%; --y: 14%; --speed: 9s; --delay: -2.3s;"></span>
+    <span style="--size: 52px; --x: 74%; --y: 46%; --speed: 8.4s; --delay: -3.2s;"></span>
+    <span style="--size: 110px; --x: 12%; --y: 76%; --speed: 10s; --delay: -1.5s;"></span>
+    <span style="--size: 72px; --x: 58%; --y: 82%; --speed: 8.6s; --delay: -4.1s;"></span>
+  </div>
+
+  <main class="page">
+    <nav class="doc-nav" aria-label="Page navigation">
+      <a class="brand" href="#hero">
+        <strong>DOC FAMILY</strong>
+        <span>Starter Flow</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link active" href="#hero">Overview</a>
+        <a class="nav-link" href="#details">Details</a>
+        <a class="nav-link" href="#timeline">Timeline</a>
+        <a class="nav-link" href="#cards">Cards</a>
+      </div>
+    </nav>
+
+    <section class="hero" id="hero">
+      <div class="hero-glow"></div>
+      <div class="hero-orbits" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <div class="hero-top">
+        <span class="tag hot">DOC ENTRY</span>
+        <span class="tag">Soft Motion</span>
+        <span class="tag">Readable Flow</span>
+      </div>
+
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="lead">PASTEL GLASSMORPHISM / STARTER PAGE</span>
+          <h1>
+            用一张页面先说明清楚
+            <span>再让它看起来轻盈</span>
+          </h1>
+          <span class="title-note">Doc Rhythm / ページ設計</span>
+          <p>
+            这是 skill 自带的基础页面模板。你可以直接复制它作为新页面起点，再按内容任务保留、
+            删除或替换其中的模块。
+          </p>
+          <div class="hero-meta">
+            <span class="hero-chip"><b>READ FIRST</b> 先让用户速读，再进入细节</span>
+            <span class="hero-chip"><b>ONE THEME</b> 公共样式尽量收敛到一份主题 CSS</span>
+            <span class="hero-chip"><b>SOFT AIR</b> 动效只负责呼吸感，不抢正文</span>
+          </div>
+        </div>
+
+        <aside class="hero-panel">
+          <div class="panel-title">
+            <strong>速读面板</strong>
+            <span class="panel-kana">Quick Scan</span>
+          </div>
+          <div class="status-grid">
+            <div class="status-item">
+              <span>Position</span>
+              <strong>一页即可起稿</strong>
+              <div class="status-badge free">Starter</div>
+              <p>适合做 landing、about、公告页、协议页和隐私页的第一版骨架。</p>
+            </div>
+            <div class="status-item">
+              <span>Theme</span>
+              <strong>浅色玻璃拟态</strong>
+              <div class="status-badge log">Pastel</div>
+              <p>高饱和强调色只用于少数节点，正文保持克制稳定。</p>
+            </div>
+            <div class="status-item">
+              <span>Modules</span>
+              <strong>可裁剪组合</strong>
+              <div class="status-badge warn">Flexible</div>
+              <p>不是所有模块都必须保留，按页面任务删减即可。</p>
+            </div>
+            <div class="status-item">
+              <span>Links</span>
+              <strong>优先相对路径</strong>
+              <div class="status-badge note">Portable</div>
+              <p>静态预览、部署和后续分享都会更轻松。</p>
+            </div>
+          </div>
+          <div class="summary">
+            起稿时先写主题、边界、适用人群，再往下展开结构，不要一上来堆满长段正文。
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="marquee-banner" aria-label="quick highlights">
+      <article class="marquee-item">
+        <span class="marquee-label">Tone</span>
+        <span class="marquee-value">明亮，但不轻浮</span>
+        <p>背景轻、信息稳、重点清楚，适合说明页和规则页。</p>
+      </article>
+      <article class="marquee-item">
+        <span class="marquee-label">Structure</span>
+        <span class="marquee-value">先摘要，再细化</span>
+        <p>Hero、摘要模块、细节模块、结论块，这套节奏尽量保持稳定。</p>
+      </article>
+      <article class="marquee-item">
+        <span class="marquee-label">Output</span>
+        <span class="marquee-value">从模板到页面家族</span>
+        <p>先做一页能跑，再抽成可共享主题和多页面系统。</p>
+      </article>
+    </section>
+
+    <div class="section-head" id="details">
+      <h2>三段式信息展开</h2>
+      <p>如果你不知道正文从哪里开始，可以先用三个 detail panel 把定位、边界和下一步拆开。</p>
+    </div>
+
+    <section class="detail-grid">
+      <article class="detail-panel">
+        <span class="detail-label">Why</span>
+        <h3>为什么是这页</h3>
+        <p>用一句话解释页面存在的目的，让用户知道自己为什么要继续往下读。</p>
+      </article>
+      <article class="detail-panel">
+        <span class="detail-label">What</span>
+        <h3>这页讲什么</h3>
+        <p>给出主题边界，不要让用户读到一半才发现内容和预期不同。</p>
+      </article>
+      <article class="detail-panel">
+        <span class="detail-label">Next</span>
+        <h3>接下来去哪</h3>
+        <p>用导航、锚点或底部链接，让页面的后续路径更清晰。</p>
+      </article>
+    </section>
+
+    <div class="section-head" id="timeline">
+      <h2>时间线或阶段线</h2>
+      <p>公告页、隐私页、更新页、流程页都可以借用这一块做分阶段说明。</p>
+    </div>
+
+    <section class="timeline-board">
+      <article class="timeline-item">
+        <span class="timeline-date">Step 01</span>
+        <h3 class="timeline-title">先交代背景</h3>
+        <p class="timeline-desc">用短段落说明场景、定位和阅读入口。</p>
+      </article>
+      <article class="timeline-item">
+        <span class="timeline-date">Step 02</span>
+        <h3 class="timeline-title">再拆解重点</h3>
+        <p class="timeline-desc">把复杂说明分配给时间线、卡片或 detail grid，不要直接变成长墙。</p>
+      </article>
+      <article class="timeline-item">
+        <span class="timeline-date">Step 03</span>
+        <h3 class="timeline-title">最后给出提醒</h3>
+        <p class="timeline-desc">收尾时用 quote-box 或 notice 给出立场、风险和边界。</p>
+      </article>
+    </section>
+
+    <div class="section-head" id="cards">
+      <h2>卡片模块</h2>
+      <p>每张卡尽量只讲一个核心点，这样页面会更容易扫读。</p>
+    </div>
+
+    <section class="cards">
+      <article class="card">
+        <div class="card-top">
+          <div class="icon">01</div>
+          <div>
+            <span class="eyebrow">Core / Topic</span>
+            <h3>一个卡片只放一个重点</h3>
+          </div>
+        </div>
+        <p>把说明页拆成多个独立信息块，而不是把所有内容压到一屏里。</p>
+      </article>
+      <article class="card">
+        <div class="card-top">
+          <div class="icon">02</div>
+          <div>
+            <span class="eyebrow">Accent / Highlight</span>
+            <h3>强调色只用在少数位置</h3>
+          </div>
+        </div>
+        <p>不要让整页都在抢眼，重点永远只服务于结构和阅读路径。</p>
+      </article>
+      <article class="card">
+        <div class="card-top">
+          <div class="icon">03</div>
+          <div>
+            <span class="eyebrow">Scale / Family</span>
+            <h3>先做一页，再抽成家族</h3>
+          </div>
+        </div>
+        <p>当页面类型变多时，把公共样式收进共享主题文件，避免每页自成体系。</p>
+      </article>
+    </section>
+
+    <section class="quote-box">
+      <p>
+        这套模板不是要求所有页面长得完全一样，而是帮助你在不同页面任务之间，保持同一种轻盈、
+        可扫读、可扩展的文档节奏。
+      </p>
+    </section>
+
+    <section class="notice">
+      <h3>Portable starter note</h3>
+      <p>
+        如果你正在一个没有现成页面家族的仓库里工作，先复制这张页面和基础 CSS；等第二页、第三页出现时，
+        再把通用部分回收到共享主题文件里。
+      </p>
+    </section>
+
+    <footer class="footer">
+      <div>
+        <strong>BASE TEMPLATE</strong><br />
+        Starter page for the YOOYUI Doc Style skill.
+      </div>
+      <div class="footer-links">
+        <a href="#hero">Top</a>
+        <a href="#details">Details</a>
+        <a href="#timeline">Timeline</a>
+        <a href="#cards">Cards</a>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

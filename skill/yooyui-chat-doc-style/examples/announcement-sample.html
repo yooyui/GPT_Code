@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YOOYUI Doc Style | Announcement Sample</title>
+  <meta name="description" content="Announcement page sample for the YOOYUI Doc Style skill." />
+  <link rel="stylesheet" href="../templates/docs-theme.base.css" />
+</head>
+<body class="page-announcement">
+  <div class="bg-layer grid"></div>
+  <div class="bg-layer sparkles"></div>
+  <div class="bg-layer energy-lines"></div>
+  <div class="bg-layer bg-aurora"></div>
+  <div class="bg-layer bg-wave"></div>
+  <div class="bg-layer bg-bubbles" aria-hidden="true">
+    <span style="--size: 68px; --x: 8%; --y: 20%; --speed: 7.5s; --delay: -1s;"></span>
+    <span style="--size: 88px; --x: 86%; --y: 14%; --speed: 9s; --delay: -2.3s;"></span>
+    <span style="--size: 52px; --x: 74%; --y: 46%; --speed: 8.4s; --delay: -3.2s;"></span>
+    <span style="--size: 110px; --x: 12%; --y: 76%; --speed: 10s; --delay: -1.5s;"></span>
+    <span style="--size: 72px; --x: 58%; --y: 82%; --speed: 8.6s; --delay: -4.1s;"></span>
+  </div>
+
+  <main class="page">
+    <nav class="doc-nav" aria-label="Announcement navigation">
+      <a class="brand" href="#hero">
+        <strong>ANNOUNCEMENT</strong>
+        <span>Broadcast Flow</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link active" href="#hero">Overview</a>
+        <a class="nav-link" href="#timeline">Timeline</a>
+        <a class="nav-link" href="#cards">Notes</a>
+      </div>
+    </nav>
+
+    <section class="hero" id="hero">
+      <div class="hero-glow"></div>
+      <div class="hero-orbits" aria-hidden="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <div class="hero-top">
+        <span class="tag hot">ANNOUNCEMENT</span>
+        <span class="tag">Service Board</span>
+        <span class="tag">お知らせ</span>
+      </div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="lead">SERVICE BROADCAST / LIVE BOARD</span>
+          <h1>
+            当前公告
+            <span>与运行提醒</span>
+          </h1>
+          <span class="title-note">運営ノート / Announcement</span>
+          <p>
+            这个示例页用于演示 Announcement 配方：把最近更新、当前状态、运营提醒和变更优先级，
+            以更适合扫读的方式集中展示。
+          </p>
+          <div class="hero-meta">
+            <span class="hero-chip"><b>PUBLIC</b> 当前信息面向公开读者</span>
+            <span class="hero-chip"><b>ROLLING</b> 更新可能分批滚动发布</span>
+            <span class="hero-chip"><b>NOTICE</b> 重要变化优先在此同步</span>
+          </div>
+        </div>
+        <aside class="hero-panel">
+          <div class="panel-title">
+            <strong>公告速读</strong>
+            <span class="panel-kana">運営トーン</span>
+          </div>
+          <div class="status-grid">
+            <div class="status-item">
+              <span>Current Mode <em>状态</em></span>
+              <strong>公开运行中</strong>
+              <div class="status-badge free">Active</div>
+              <p>适合体验、说明与轻量使用，但不等同于企业级 SLA 承诺。</p>
+            </div>
+            <div class="status-item">
+              <span>Update Pace <em>节奏</em></span>
+              <strong>滚动更新</strong>
+              <div class="status-badge log">Rolling</div>
+              <p>文案、页面、规则和配置都可能分批调整。</p>
+            </div>
+            <div class="status-item">
+              <span>Peak Time <em>高峰</em></span>
+              <strong>高峰期可能波动</strong>
+              <div class="status-badge warn">Watch Load</div>
+              <p>响应速度、排队和上游稳定性在高峰时可能有明显变化。</p>
+            </div>
+            <div class="status-item">
+              <span>Contact <em>反馈</em></span>
+              <strong>异常请及时反馈</strong>
+              <div class="status-badge note">Manual Support</div>
+              <p>当页面信息、规则说明或运行表现异常时，应尽快人工同步。</p>
+            </div>
+          </div>
+          <div class="summary">当公告与其他说明页出现差异时，通常以时间更晚且更具体的公告内容为优先解释依据。</div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="marquee-banner" aria-label="关键信息">
+      <article class="marquee-item">
+        <span class="marquee-label">Effective Date</span>
+        <span class="marquee-value">示例即刻生效</span>
+        <p>适合展示当前版本说明、运行提醒和近期改动摘要。</p>
+      </article>
+      <article class="marquee-item">
+        <span class="marquee-label">Current Advice</span>
+        <span class="marquee-value">关键任务保留兜底方案</span>
+        <p>公告页更适合承接风险提醒，而不是只写简短更新日志。</p>
+      </article>
+      <article class="marquee-item">
+        <span class="marquee-label">Priority Rule</span>
+        <span class="marquee-value">重大变化优先公告</span>
+        <p>一旦涉及规则、费率、限流或能力变更，应优先通过公告页传达。</p>
+      </article>
+    </section>
+
+    <div class="section-head" id="timeline">
+      <h2>最近播报</h2>
+      <p>重要更新按时间线展开，方便用户快速确认近期发生了什么。</p>
+    </div>
+
+    <section class="timeline-board" aria-label="最近播报时间线">
+      <article class="timeline-item">
+        <span class="timeline-date">04-01</span>
+        <h3 class="timeline-title">页面家族样式统一完成</h3>
+        <p class="timeline-desc">公告、协议、隐私和 About 继续共享同一套视觉语言和导航系统。</p>
+      </article>
+      <article class="timeline-item">
+        <span class="timeline-date">03-30</span>
+        <h3 class="timeline-title">运行提醒说明增强</h3>
+        <p class="timeline-desc">对高峰波动、上游异常和人工反馈路径增加了更清晰的说明。</p>
+      </article>
+      <article class="timeline-item">
+        <span class="timeline-date">03-28</span>
+        <h3 class="timeline-title">规则页联动逻辑确定</h3>
+        <p class="timeline-desc">后续若出现描述差异，以时间更晚且更具体的页面为优先解释依据。</p>
+      </article>
+    </section>
+
+    <div class="section-head" id="cards">
+      <h2>运营要点</h2>
+      <p>以下内容适合作为长期有效的使用提醒与运营说明。</p>
+    </div>
+
+    <section class="cards">
+      <article class="card">
+        <div class="card-top"><div class="icon">📡</div><div><span class="eyebrow">01 / Status</span><h3>当前服务状态</h3></div></div>
+        <p>公告页适合用来说明当前是否开放、是否维护中，以及能否正常体验。</p>
+      </article>
+      <article class="card">
+        <div class="card-top"><div class="icon">🧪</div><div><span class="eyebrow">02 / Trial</span><h3>推荐使用方式</h3></div></div>
+        <p>当能力或规则仍在滚动调整时，建议先小流量试用，再逐步扩大使用范围。</p>
+      </article>
+      <article class="card">
+        <div class="card-top"><div class="icon">⏱️</div><div><span class="eyebrow">03 / Peak</span><h3>高峰期提醒</h3></div></div>
+        <p>高峰期更适合通过公告页提前写明排队、时延和上游波动的预期。</p>
+      </article>
+      <article class="card">
+        <div class="card-top"><div class="icon">⚖️</div><div><span class="eyebrow">04 / Rule</span><h3>规则变化方式</h3></div></div>
+        <p>如果条款、配额或费率变动，公告页往往是第一同步位置。</p>
+      </article>
+      <article class="card">
+        <div class="card-top"><div class="icon">🧯</div><div><span class="eyebrow">05 / Risk</span><h3>风险应对建议</h3></div></div>
+        <p>面向正式任务时，应建议用户保留重试、降级或备用链路。</p>
+      </article>
+      <article class="card">
+        <div class="card-top"><div class="icon">📬</div><div><span class="eyebrow">06 / Contact</span><h3>反馈与处理</h3></div></div>
+        <p>当页面、规则或行为异常时，公告页也适合放置反馈路径与处理建议。</p>
+      </article>
+    </section>
+
+    <section class="notice">
+      <h3>Announcement sample note</h3>
+      <p>这类页面的重点不是堆满版本日志，而是把“当前状态 + 近期变化 + 持续有效提醒”组织成一眼能读懂的结构。</p>
+    </section>
+
+    <footer class="footer">
+      <div><strong>ANNOUNCEMENT SAMPLE</strong><br />Example service broadcast page for the portable skill package.</div>
+      <div class="footer-links">
+        <a href="#hero">Overview</a>
+        <a href="#timeline">Timeline</a>
+        <a href="#cards">Notes</a>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>

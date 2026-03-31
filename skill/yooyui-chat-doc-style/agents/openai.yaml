@@ -1,0 +1,8 @@
+interface:
+  display_name: "YOOYUI Doc Style"
+  short_description: "Pastel glassmorphism doc pages"
+  brand_color: "#FF5C8A"
+  default_prompt: "Use $yooyui-chat-doc-style to create or restyle a static documentation page in a pastel glassmorphism visual language. Reuse an existing shared theme if present; otherwise start from the bundled templates and base CSS."
+
+policy:
+  allow_implicit_invocation: true

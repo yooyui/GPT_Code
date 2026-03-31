@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YOOYUI Doc Style | Privacy Sample</title>
+  <meta name="description" content="Privacy page sample for the YOOYUI Doc Style skill." />
+  <link rel="stylesheet" href="../templates/docs-theme.base.css" />
+</head>
+<body class="page-privacy">
+  <div class="bg-layer grid"></div>
+  <div class="bg-layer sparkles"></div>
+  <div class="bg-layer energy-lines"></div>
+  <div class="bg-layer bg-aurora"></div>
+  <div class="bg-layer bg-wave"></div>
+  <div class="bg-layer bg-bubbles" aria-hidden="true">
+    <span style="--size: 68px; --x: 8%; --y: 20%; --speed: 7.5s; --delay: -1s;"></span>
+    <span style="--size: 88px; --x: 86%; --y: 14%; --speed: 9s; --delay: -2.3s;"></span>
+    <span style="--size: 52px; --x: 74%; --y: 46%; --speed: 8.4s; --delay: -3.2s;"></span>
+    <span style="--size: 110px; --x: 12%; --y: 76%; --speed: 10s; --delay: -1.5s;"></span>
+    <span style="--size: 72px; --x: 58%; --y: 82%; --speed: 8.6s; --delay: -4.1s;"></span>
+  </div>
+
+  <main class="page">
+    <nav class="doc-nav" aria-label="Privacy navigation">
+      <a class="brand" href="#hero">
+        <strong>PRIVACY PAGE</strong>
+        <span>Data Route</span>
+      </a>
+      <div class="nav-links">
+        <a class="nav-link active" href="#hero">Overview</a>
+        <a class="nav-link" href="#timeline">Data Path</a>
+        <a class="nav-link" href="#cards">Rules</a>
+      </div>
+    </nav>
+
+    <section class="hero" id="hero">
+      <div class="hero-glow"></div>
+      <div class="hero-orbits" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div class="hero-top">
+        <span class="tag hot">PRIVACY POLICY</span>
+        <span class="tag">Data Path</span>
+        <span class="tag">データポリシー</span>
+      </div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <span class="lead">DATA PATH / PRIVACY MAP</span>
+          <h1>你的数据会经过 <span>哪些链路</span></h1>
+          <span class="title-note">プライバシーポリシー / Privacy Policy</span>
+          <p>这个示例页展示 Privacy 配方：先解释处理边界，再用时间线说明数据路径，最后用卡片拆开关键隐私规则。</p>
+          <div class="hero-meta">
+            <span class="hero-chip"><b>MINIMUM</b> 仅处理必要运行信息</span>
+            <span class="hero-chip"><b>UPSTREAM</b> 请求可能进入第三方模型链路</span>
+            <span class="hero-chip"><b>JUDGEMENT</b> 高敏感数据应优先本地处理</span>
+          </div>
+        </div>
+        <aside class="hero-panel">
+          <div class="panel-title">
+            <strong>隐私速读</strong>
+            <span class="panel-kana">保護ポイント</span>
+          </div>
+          <div class="status-grid">
+            <div class="status-item"><span>Collection <em>采集</em></span><strong>以运行元数据为主</strong><div class="status-badge free">Minimal Data</div><p>主要围绕调用时间、Token 用量、模型信息和必要日志展开。</p></div>
+            <div class="status-item"><span>Purpose <em>用途</em></span><strong>运维、统计与风控</strong><div class="status-badge log">Operations</div><p>数据主要用于稳定服务、识别异常与必要的审计追踪。</p></div>
+            <div class="status-item"><span>Sharing <em>披露</em></span><strong>仅限必要链路</strong><div class="status-badge warn">Limited Share</div><p>请求可能进入上游模型服务、基础设施或依法要求的处理场景。</p></div>
+            <div class="status-item"><span>Choice <em>选择</em></span><strong>不同意请停止使用</strong><div class="status-badge note">User Choice</div><p>若你无法接受这套处理方式，就不应继续提交高敏感内容。</p></div>
+          </div>
+          <div class="summary">输入前的自我判断，永远是隐私保护的第一道关口。</div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="marquee-banner" aria-label="隐私关键信息">
+      <article class="marquee-item"><span class="marquee-label">Collection Rule</span><span class="marquee-value">以最小必要为原则</span><p>只保留支撑运行、排障和风控所需的最基本技术信息。</p></article>
+      <article class="marquee-item"><span class="marquee-label">High Risk Input</span><span class="marquee-value">不要直接提交高敏感数据</span><p>密码、私钥、银行卡号、证件与未脱敏业务信息都不应默认进入在线模型链路。</p></article>
+      <article class="marquee-item"><span class="marquee-label">User Control</span><span class="marquee-value">输入前的判断更重要</span><p>很多隐私风险发生在“已经提交出去”之前，其实就可以避免。</p></article>
+    </section>
+
+    <div class="section-head" id="timeline">
+      <h2>数据路径</h2>
+      <p>Privacy 页适合用时间线或阶段线来解释数据从输入到处理的大致流向。</p>
+    </div>
+
+    <section class="timeline-board" aria-label="数据路径">
+      <article class="timeline-item"><span class="timeline-date">Step 1</span><h3 class="timeline-title">用户提交内容</h3><p class="timeline-desc">内容先进入当前服务用于鉴权、路由和接口处理。</p></article>
+      <article class="timeline-item"><span class="timeline-date">Step 2</span><h3 class="timeline-title">系统生成运行记录</h3><p class="timeline-desc">服务端可能记录调用时间、模型信息和必要的技术日志。</p></article>
+      <article class="timeline-item"><span class="timeline-date">Step 3</span><h3 class="timeline-title">请求进入上游链路</h3><p class="timeline-desc">若需要外部模型处理，请求可能进入第三方平台或基础设施。</p></article>
+      <article class="timeline-item"><span class="timeline-date">Step 4</span><h3 class="timeline-title">结果返回并用于排障</h3><p class="timeline-desc">必要时，部分异常信息会被用于定位问题和识别滥用。</p></article>
+    </section>
+
+    <div class="section-head" id="cards">
+      <h2>隐私要点</h2>
+      <p>以下卡片适合概括当前服务在采集、用途、上游链路和自我保护方面的规则。</p>
+    </div>
+
+    <section class="cards">
+      <article class="card"><div class="card-top"><div class="icon">🧾</div><div><span class="eyebrow">01 / What</span><h3>会收集什么</h3></div></div><p>系统通常只收集支撑运行、统计和排障所需的最小元数据。</p></article>
+      <article class="card"><div class="card-top"><div class="icon">🎯</div><div><span class="eyebrow">02 / Why</span><h3>为什么会收集</h3></div></div><p>主要用于服务可用性维护、异常排查、资源统计和必要审计。</p></article>
+      <article class="card"><div class="card-top"><div class="icon">🌍</div><div><span class="eyebrow">03 / Upstream</span><h3>第三方链路</h3></div></div><p>当请求进入外部模型服务时，也会受到其平台政策与处理方式影响。</p></article>
+      <article class="card"><div class="card-top"><div class="icon">🛡️</div><div><span class="eyebrow">04 / Security</span><h3>如何保护</h3></div></div><p>通过权限控制、配置隔离和必要清理尽量降低泄露风险，但无法承诺绝对安全。</p></article>
+      <article class="card"><div class="card-top"><div class="icon">🚨</div><div><span class="eyebrow">05 / Self Protect</span><h3>你要注意什么</h3></div></div><p>高敏感信息应优先在本地脱敏或本地处理，不要默认可直接发给在线服务。</p></article>
+      <article class="card"><div class="card-top"><div class="icon">🔁</div><div><span class="eyebrow">06 / Update</span><h3>政策更新方式</h3></div></div><p>政策会随服务策略、基础设施或合规要求变化而更新，继续使用即视为接受新版本。</p></article>
+    </section>
+
+    <section class="quote-box">
+      <p>隐私页最重要的不是堆抽象定义，而是把“数据会去哪、为什么处理、用户该如何判断”讲得具体。</p>
+    </section>
+
+    <section class="notice">
+      <h3>Privacy sample note</h3>
+      <p>Privacy 配方的重点是“路径可视化 + 规则拆分 + 风险前置提醒”，而不是只写一面术语墙。</p>
+    </section>
+
+    <footer class="footer">
+      <div><strong>PRIVACY SAMPLE</strong><br />Example privacy page for the portable skill package.</div>
+      <div class="footer-links">
+        <a href="#hero">Overview</a>
+        <a href="#timeline">Data Path</a>
+        <a href="#cards">Rules</a>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>
