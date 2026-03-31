@@ -58,7 +58,8 @@
 5. `detail-grid`
 6. `cards`
 7. `quote-box`
-8. footer
+8. `notice`
+9. footer
 
 适合内容：
 
@@ -99,12 +100,14 @@
 
 1. `doc-nav`
 2. hero
-3. `section-head`
-4. `timeline-board`
-5. `section-head`
-6. `cards`
-7. `notice`
-8. footer
+3. `marquee-banner`
+4. `section-head`
+5. `timeline-board`
+6. `section-head`
+7. `cards`
+8. `quote-box`
+9. `notice`
+10. footer
 
 适合内容：
 
@@ -129,9 +132,11 @@
 2. hero
 3. `marquee-banner` 或 `detail-grid`
 4. `section-head`
-5. `cards`
-6. `notice`
-7. footer
+5. `detail-grid`
+6. `cards`
+7. `quote-box`
+8. `notice`
+9. footer
 
 适合内容：
 

@@ -5,7 +5,7 @@ $examplesDir = Join-Path $root 'examples'
 
 $expected = @(
   @{ File = 'landing-sample.html'; Body = 'page-landing'; Sections = @('hero', 'cards', 'notice') }
-  @{ File = 'about-sample.html'; Body = 'page-about'; Sections = @('hero', 'marquee-banner', 'detail-grid', 'cards', 'quote-box') }
+  @{ File = 'about-sample.html'; Body = 'page-about'; Sections = @('hero', 'marquee-banner', 'detail-grid', 'cards', 'quote-box', 'notice') }
   @{ File = 'announcement-sample.html'; Body = 'page-announcement'; Sections = @('hero', 'marquee-banner', 'timeline-board', 'cards', 'notice') }
   @{ File = 'privacy-sample.html'; Body = 'page-privacy'; Sections = @('hero', 'marquee-banner', 'timeline-board', 'cards', 'quote-box', 'notice') }
   @{ File = 'agreement-sample.html'; Body = 'page-agreement'; Sections = @('hero', 'marquee-banner', 'detail-grid', 'cards', 'quote-box', 'notice') }
